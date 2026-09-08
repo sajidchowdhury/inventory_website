@@ -1,0 +1,1200 @@
+     1→     1→# Mudaraba Profit Management System
+     2→     2→## Laravel Project Plan — Phase & Session Breakdown
+     3→     3→
+     4→     4→> **Document purpose**: A complete, phase-by-phase implementation roadmap for rebuilding the Mudaraba money-management & profit-distribution system as a modern Laravel application with a premium, Excel-rivaling UI.
+     5→     5→>
+     6→     6→> **Scope**: Mudaraba engine only (MuRabaha parallel system is out of scope for now).
+     7→     7→> **Source of business truth**: `Modaraba_System_Analysis_Report_2026-08-29.docx` (8-phase calculation engine, tier system, retained earnings, M/Y residual profit).
+     8→     8→> **Implementation reference**: existing raw PHP project at `github.com/sajidchowdhury/mudaraba` (due-ledger pattern, master calc engine, RBAC).
+     9→     9→
+    10→    10→---
+    11→    11→
+    12→    12→## Table of Contents
+    13→    13→
+    14→    14→1. [Project Vision & Goals](#1-project-vision--goals)
+    15→    15→2. [Technology Stack Decisions](#2-technology-stack-decisions)
+    16→    16→3. [UI/UX Design Principles](#3-uiux-design-principles)
+    17→    17→4. [Database Design](#4-database-design)
+    18→    18→5. [Business Logic Specification](#5-business-logic-specification)
+    19→    19→6. [Phase & Session Roadmap (Overview)](#6-phase--session-roadmap-overview)
+    20→    20→7. [Phase Details](#7-phase-details)
+    21→    21→   - [Phase 0 — Foundation & Design System](#phase-0--foundation--design-system)
+    22→    22→   - [Phase 1 — Database Design & Migrations](#phase-1--database-design--migrations)
+    23→    23→   - [Phase 2 — Authentication & RBAC](#phase-2--authentication--rbac)
+    24→    24→   - [Phase 3 — Master Data Management](#phase-3--master-data-management)
+    25→    25→   - [Phase 4 — The Profit Engine](#phase-4--the-profit-engine)
+    26→    26→   - [Phase 5 — Advance Profit Adjustments](#phase-5--advance-profit-adjustments)
+    27→    27→   - [Phase 6 — Opening Balances](#phase-6--opening-balances)
+    28→    28→   - [Phase 7 — Reports & Dashboards](#phase-7--reports--dashboards)
+    29→    29→   - [Phase 8 — Polish & Quality Assurance](#phase-8--polish--quality-assurance)
+    30→    30→8. [Testing Strategy](#8-testing-strategy)
+    31→    31→9. [Risk Register & Mitigation](#9-risk-register--mitigation)
+    32→    32→10. [Deployment Notes](#10-deployment-notes)
+    33→    33→11. [Convention & Naming Standards](#11-convention--naming-standards)
+    34→    34→
+    35→    35→---
+    36→    36→
+    37→    37→## 1. Project Vision & Goals
+    38→    38→
+    39→    39→### 1.1 Vision
+    40→    40→A **premium, clean, mobile-friendly** Laravel web application that replaces the manual Excel workbook ("Investors Report 2026 New.xlsx" → "July, 2026 For Sajid" sheet) for managing a Mudaraba profit-sharing pool. The system must feel as fast and tactile as Excel for the M/Y's daily workflow, while enforcing data integrity, audit trails, and proper business logic that the spreadsheet cannot guarantee.
+    41→    41→
+    42→    42→### 1.2 Goals
+    43→    43→
+    44→    44→| # | Goal | Success Metric |
+    45→    45→|---|------|----------------|
+    46→    46→| G1 | Accurate replication of the Excel 8-phase calculation engine | Monthly reconciliation matches Excel to ±BDT 1.00 |
+    47→    47→| G2 | Premium UI that an Excel power-user enjoys | First-time user can complete a monthly run without training |
+    48→    48→| G3 | Mobile-friendly responsive design | 100% of workflows usable on a 375px-wide phone |
+    49→    49→| G4 | Proper relational database with enforced integrity | Zero orphaned transactions; all FKs enforced |
+    50→    50→| G5 | Audit-grade transaction history | Every financial mutation is traceable to user + timestamp |
+    51→    51→| G6 | Add the missing Retained Earnings mechanism | 71/29 split of BDT 200K automated monthly |
+    52→    52→| G7 | Role-based access control | Operators see only permitted modules |
+    53→    53→
+    54→    54→### 1.3 Non-Goals (this project)
+    55→    55→- MuRabaha parallel system (separate project later)
+    56→    56→- Public-facing investor portal (operator-only for now)
+    57→    57→- Real-time currency conversion / multi-currency
+    58→    58→- Automated bank integration
+    59→    59→
+    60→    60→### 1.4 Key Stakeholders
+    61→    61→
+    62→    62→| Role | Who | Uses For |
+    63→    63→|------|-----|----------|
+    64→    64→| **M/Y (Modaraba Owner)** | Sajid / managing partner | Daily operation, profit entry, reports |
+    65→    65→| **Operators** | Mohammad and team | Data entry, investor management |
+    66→    66→| **Super Admin** | IT executive | User management, permissions, opening balances |
+    67→    67→| **Auditors** (future) | External | Read-only ledger review |
+    68→    68→
+    69→    69→---
+    70→    70→
+    71→    71→## 2. Technology Stack Decisions
+    72→    72→
+    73→    73→### 2.1 Backend
+    74→    74→| Component | Choice | Rationale |
+    75→    75→|-----------|--------|-----------|
+    76→    76→| Framework | **Laravel 11** (latest LTS) | Mature, excellent ORM, queue, auth, validation |
+    77→    77→| Language | **PHP 8.3+** | Typed properties, enums, readonly — fits financial domain |
+    78→    78→| Database | **PostgreSQL 16** (primary) | True `DECIMAL` arithmetic, `CHECK` constraints, window functions, partial indexes — essential for finance. MySQL 8 is an acceptable fallback. |
+    79→    79→| Cache | Redis | Session, cache, queue |
+    80→    80→| Queue | Laravel Queue (Redis driver) | Async PDF generation, bulk imports |
+    81→    81→| Search | Laravel Scout + database driver (for now) | Investor/sector quick search |
+    82→    82→
+    83→    83→### 2.2 Frontend
+    84→    84→| Component | Choice | Rationale |
+    85→    85→|-----------|--------|-----------|
+    86→    86→| Rendering | **Inertia.js + React 18** | SPA feel without building a separate API; Laravel routes serve React pages directly |
+    87→    87→| Styling | **Tailwind CSS 4** | Utility-first, responsive, fast iteration |
+    88→    88→| Components | **shadcn/ui** (New York style) | Premium, accessible, customizable, not a "template look" |
+    89→    89→| Icons | **Lucide React** | Consistent, modern, lightweight |
+    90→    90→| Charts | **Recharts** | React-native, responsive, composable |
+    91→    91→| Tables | **TanStack Table v8** | Headless, supports Excel-like inline editing, virtualization for 150+ investor grids |
+    92→    92→| Forms | **React Hook Form + Zod** | Performant, schema-validated |
+    93→    93→| Notifications | **Sonner** (toasts) | Premium toast UX |
+    94→    94→| Animations | **Framer Motion** | Subtle micro-interactions |
+    95→    95→
+    96→    96→> **Why not Livewire/Filament?** Filament is excellent for admin CRUD but produces a recognisable "admin panel" aesthetic. The M/Y currently lives in Excel — we need a bespoke, premium financial UI, not a generic admin skin. Inertia + React + shadcn gives full creative control.
+    97→    97→
+    98→    98→### 2.3 DevOps & Tooling
+    99→    99→| Tool | Purpose |
+   100→   100→|------|---------|
+   101→   101→| Composer / npm | Package management |
+   102→   102→| Laravel Sail OR Laravel Herd | Local dev |
+   103→   103→| Git + GitHub | Version control (private repo) |
+   104→   104→| Laravel Pint | PHP formatting |
+   105→   105→| Larastan (PHPStan) | Static analysis — critical for financial code |
+   106→   106→| Pest PHP | Testing (modern, expressive) |
+   107→   107→| Playwright | E2E browser testing |
+   108→   108→| GitHub Actions | CI: lint, static-analysis, tests |
+   109→   109→
+   110→   110→---
+   111→   111→
+   112→   112→## 3. UI/UX Design Principles
+   113→   113→
+   114→   114→### 3.1 Design Philosophy
+   115→   115→> *"Make the M/Y forget Excel — but feel at home."*
+   116→   116→
+   117→   117→The system must combine **spreadsheet ergonomics** (fast bulk entry, inline editing, keyboard navigation, live formula previews) with **premium SaaS aesthetics** (clean whitespace, refined typography, subtle motion, considered color).
+   118→   118→
+   119→   119→### 3.2 Visual Design System
+   120→   120→
+   121→   121→**Color palette** (light + dark mode, NO indigo/blue per house style):
+   122→   122→
+   123→   123→| Token | Light | Dark | Usage |
+   124→   124→|-------|-------|------|-------|
+   125→   125→| `background` | `#FFFFFF` | `#0A0A0B` | App canvas |
+   126→   126→| `surface` | `#FAFAFA` | `#141416` | Cards, panels |
+   127→   127→| `surface-2` | `#F4F4F5` | `#1C1C1F` | Nested sections, table headers |
+   128→   128→| `border` | `#E4E4E7` | `#27272A` | Dividers |
+   129→   129→| `foreground` | `#18181B` | `#FAFAFA` | Primary text |
+   130→   130→| `muted` | `#71717A` | `#A1A1AA` | Secondary text |
+   131→   131→| `primary` | **Emerald `#10B981`** | same | Action, positive (growth/profit) |
+   132→   132→| `accent` | **Amber `#F59E0B`** | same | Highlight, retained earnings |
+   133→   133→| `success` | `#22C55E` | same | Receivable to M/Y |
+   134→   134→| `danger` | `#EF4444` | same | Payable / over-paid / loss |
+   135→   135→| `warning` | `#F59E0B` | same | Variance flag |
+   136→   136→| `info` | `#06B6D4` | same | Neutral info |
+   137→   137→
+   138→   138→> Emerald as primary signals growth & Islamic-finance green-adjacent connotation without being literal. Amber accents tie to retained-earnings gold.
+   139→   139→
+   140→   140→**Typography**:
+   141→   141→- Sans: **Inter** (UI, tables, forms)
+   142→   142→- Mono: **JetBrains Mono** (numbers, monetary values, cell refs) — monospace numbers align in columns like Excel
+   143→   143→- Display: **Inter Tight** (headings, dashboard KPIs)
+   144→   144→
+   145→   145→**Spacing & radius**: 4px grid; `rounded-xl` (12px) cards; `rounded-lg` (8px) inputs; `rounded-md` (6px) buttons.
+   146→   146→
+   147→   147→**Shadows**: Layered, soft — `shadow-sm` default, `shadow-md` on hover, `shadow-lg` on modals.
+   148→   148→
+   149→   149→### 3.3 Interaction Principles
+   150→   150→
+   151→   151→| Principle | Implementation |
+   152→   152→|-----------|---------------|
+   153→   153→| **Spreadsheet-grade data entry** | TanStack Table with inline-editable cells; Tab/Enter navigation; paste from Excel; "fill down" |
+   154→   154→| **Live calculation preview** | As M/Y types sector actuals, investor profit columns recompute in real-time before save (mirrors Excel formula feel) |
+   155→   155→| **Color-coded financials** | Over-payment (receivable) = green tint; under-payment (payable) = red tint; zero = neutral |
+   156→   156→| **Month switcher always visible** | Top-bar persistent month selector — jump between months instantly |
+   157→   157→| **Sticky summary row** | Totals (X2, Y2, Z2, M/Y profit) pinned at top of investor grid, updating live |
+   158→   158→| **Keyboard-first** | `Cmd/Ctrl+K` command palette; `J/K` to navigate tables; `E` to edit; `S` to save |
+   159→   159→| **Subtle motion** | Framer Motion: 150ms ease-out for hovers; 200ms for panels; number count-up animations on KPIs |
+   160→   160→| **Empty states** | Every empty view has an illustration + CTA (never blank) |
+   161→   161→| **Toast feedback** | Every save/update/delete confirms with Sonner toast (success/danger variants) |
+   162→   162→| **Optimistic + skeleton loading** | Skeleton rows on fetch; optimistic update on inline edit |
+   163→   163→
+   164→   164→### 3.4 Layout Architecture
+   165→   165→
+   166→   166→```
+   167→   167→┌──────────────────────────────────────────────────────────────┐
+   168→   168→│  TopBar: [☰] [Month▼ Jul 2026]  [Search⌘K]  [Bell] [User▼]   │  ← sticky
+   169→   169→├────────────┬─────────────────────────────────────────────────┤
+   170→   170→│            │  Breadcrumb: Home / Profit / Investor Profit     │
+   171→   171→│  Sidebar   │ ┌─────────────────────────────────────────────┐  │
+   172→   172→│  (collap-  │ │  Page Title + contextual actions             │  │
+   173→   173→│  sible on  │ ├─────────────────────────────────────────────┤  │
+   174→   174→│  mobile →  │ │                                             │  │
+   175→   175→│  bottom    │ │       Main content area                     │  │
+   176→   176→│  tab bar)  │ │                                             │  │
+   177→   177→│            │ │                                             │  │
+   178→   178→│            │ └─────────────────────────────────────────────┘  │
+   179→   179→├────────────┴─────────────────────────────────────────────────┤
+   180→   180→│  Footer (sticky): © 2026 Mudaraba • v1.0 • Last sync 2m ago   │
+   181→   181→└──────────────────────────────────────────────────────────────┘
+   182→   182→```
+   183→   183→
+   184→   184→**Mobile**: sidebar collapses to a bottom tab bar (Dashboard, Profit, Reports, More). Month switcher becomes a prominent card at top of every screen.
+   185→   185→
+   186→   186→### 3.5 Key Page Mockups (described)
+   187→   187→
+   188→   188→1. **Dashboard** — 4 KPI cards (Total Investment, This Month Profit, M/Y Profit YTD, Active Investors) + 2 charts (monthly profit trend line, sector allocation donut) + recent activity feed.
+   189→   189→
+   190→   190→2. **Investor Profit page** — Split view:
+   191→   191→   - Left: editable sector profit table (17 sectors × estimated/actual, like Excel V5:Z20)
+   192→   192→   - Right: live investor grid (151 rows × investment/ratio/primary/actual/tier/advance-diff/retained/net) with sticky totals
+   193→   193→   - Top: month selector + "Save & Reconcile" CTA + variance badge
+   194→   194→
+   195→   195→3. **Investor Ledger** — Filterable transaction timeline per investor with running balance, color-coded entries, PDF/Excel export.
+   196→   196→
+   197→   197→---
+   198→   198→
+   199→   199→## 4. Database Design
+   200→   200→
+   201→   201→### 4.1 Design Improvements over the PHP Version
+   202→   202→
+   203→   203→| Issue in PHP version | Fix in Laravel version |
+   204→   204→|----------------------|------------------------|
+   205→   205→| No foreign keys (only logical) | All FKs enforced at DB level |
+   206→   206→| Mixed `float(20,2)` / `double` / `decimal` | Uniform `DECIMAL(20,2)` everywhere money |
+   207→   207→| `advance_paid` column actually stored the *difference* | Renamed `advance_difference`; separate `primary_profit_share` column |
+   208→   208→| No Retained Earnings tables | New `retained_earnings` + `retained_earnings_distributions` |
+   209→   209→| No audit trail | `audit_logs` table + model observations |
+   210→   210→| No soft deletes | Soft deletes on financial records (never hard-delete) |
+   211→   211→| `created_by` only on some tables | Universal `created_by`, `updated_by`, `deleted_by` |
+   212→   212→| Month stored as `varchar(7)` `'2026-07'` | Native `DATE` (1st of month) + generated `YYYY-MM` column |
+   213→   213→| No transaction batching | `transaction_batch` UUID for atomic month-reconcile ops |
+   214→   214→
+   215→   215→### 4.2 Full Schema (PostgreSQL DDL — condensed)
+   216→   216→
+   217→   217→```sql
+   218→   218→-- ============================================================
+   219→   219→-- AUDIT & USERS
+   220→   220→-- ============================================================
+   221→   221→
+   222→   222→CREATE TABLE users (
+   223→   223→    id              BIGSERIAL PRIMARY KEY,
+   224→   224→    employee_id     BIGINT,
+   225→   225→    username        VARCHAR(50) UNIQUE NOT NULL,
+   226→   226→    email           VARCHAR(120) UNIQUE,
+   227→   227→    password_hash   TEXT NOT NULL,
+   228→   228→    role            VARCHAR(20) NOT NULL DEFAULT 'user'
+   229→   229→                    CHECK (role IN ('user','admin','superadmin')),
+   230→   230→    status          VARCHAR(10) NOT NULL DEFAULT 'Active'
+   231→   231→                    CHECK (status IN ('Active','Inactive','Suspended')),
+   232→   232→    login_start     TIME,
+   233→   233→    login_end       TIME,
+   234→   234→    two_factor_secret TEXT,                  -- TOTP secret
+   235→   235→    two_factor_enabled BOOLEAN DEFAULT FALSE,
+   236→   236→    last_login_at   TIMESTAMPTZ,
+   237→   237→    created_at      TIMESTAMPTZ DEFAULT NOW(),
+   238→   238→    updated_at      TIMESTAMPTZ,
+   239→   239→    deleted_at      TIMESTAMPTZ
+   240→   240→);
+   241→   241→
+   242→   242→CREATE TABLE employees (
+   243→   243→    id              BIGSERIAL PRIMARY KEY,
+   244→   244→    name            VARCHAR(100) NOT NULL,
+   245→   245→    designation     VARCHAR(100),
+   246→   246→    phone           VARCHAR(20),
+   247→   247→    status          VARCHAR(20) DEFAULT 'Active',
+   248→   248→    created_at      TIMESTAMPTZ DEFAULT NOW(),
+   249→   249→    updated_at      TIMESTAMPTZ,
+   250→   250→    deleted_at      TIMESTAMPTZ
+   251→   251→);
+   252→   252→
+   253→   253→CREATE TABLE menus (
+   254→   254→    id              BIGSERIAL PRIMARY KEY,
+   255→   255→    parent_id       BIGINT REFERENCES menus(id) ON DELETE CASCADE,
+   256→   256→    name            VARCHAR(120) NOT NULL,
+   257→   257→    route           VARCHAR(120),
+   258→   258→    icon            VARCHAR(100),
+   259→   259→    sort_order      INT DEFAULT 0,
+   260→   260→    is_parent       BOOLEAN DEFAULT FALSE
+   261→   261→);
+   262→   262→
+   263→   263→CREATE TABLE user_permissions (
+   264→   264→    id              BIGSERIAL PRIMARY KEY,
+   265→   265→    user_id         BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+   266→   266→    menu_id         BIGINT NOT NULL REFERENCES menus(id) ON DELETE CASCADE,
+   267→   267→    can_view        BOOLEAN DEFAULT FALSE,
+   268→   268→    can_backdate    BOOLEAN DEFAULT FALSE,
+   269→   269→    can_edit        BOOLEAN DEFAULT FALSE,
+   270→   270→    can_delete      BOOLEAN DEFAULT FALSE,
+   271→   271→    UNIQUE (user_id, menu_id)
+   272→   272→);
+   273→   273→
+   274→   274→CREATE TABLE audit_logs (
+   275→   275→    id              BIGSERIAL PRIMARY KEY,
+   276→   276→    user_id         BIGINT REFERENCES users(id),
+   277→   277→    action          VARCHAR(50) NOT NULL,    -- create/update/delete/reconcile
+   278→   278→    entity_type     VARCHAR(60) NOT NULL,
+   279→   279→    entity_id       BIGINT,
+   280→   280→    before_data     JSONB,
+   281→   281→    after_data      JSONB,
+   282→   282→    ip_address      INET,
+   283→   283→    user_agent      TEXT,
+   284→   284→    created_at      TIMESTAMPTZ DEFAULT NOW()
+   285→   285→);
+   286→   286→
+   287→   287→-- ============================================================
+   288→   288→-- CORE ENTITIES
+   289→   289→-- ============================================================
+   290→   290→
+   291→   291→CREATE TABLE directors (           -- The M/Y (managing owner)
+   292→   292→    id              BIGSERIAL PRIMARY KEY,
+   293→   293→    name            VARCHAR(100) NOT NULL,
+   294→   294→    mobile          VARCHAR(20),
+   295→   295→    address         TEXT,
+   296→   296→    is_my           BOOLEAN DEFAULT FALSE,   -- flag the primary M/Y
+   297→   297→    created_at      TIMESTAMPTZ DEFAULT NOW(),
+   298→   298→    updated_at      TIMESTAMPTZ,
+   299→   299→    deleted_at      TIMESTAMPTZ
+   300→   300→);
+   301→   301→
+   302→   302→CREATE TABLE investors (
+   303→   303→    id              BIGSERIAL PRIMARY KEY,
+   304→   304→    name            VARCHAR(100) NOT NULL,
+   305→   305→    reference       VARCHAR(120),           -- "MD", "German", etc.
+   306→   306→    mobile          VARCHAR(20),
+   307→   307→    address         TEXT,
+   308→   308→    deed_ratio      NUMERIC(5,2) NOT NULL DEFAULT 100.00
+   309→   309→                    CHECK (deed_ratio IN (100, 80, 60)),  -- tier %
+   310→   310→    start_profit_month DATE,                 -- when they begin earning
+   311→   311→    end_profit_month   DATE,                 -- when they stop
+   312→   312→    status          VARCHAR(20) DEFAULT 'active'
+   313→   313→                    CHECK (status IN ('active','inactive','closed')),
+   314→   314→    created_at      TIMESTAMPTZ DEFAULT NOW(),
+   315→   315→    updated_at      TIMESTAMPTZ,
+   316→   316→    deleted_at      TIMESTAMPTZ
+   317→   317→);
+   318→   318→CREATE INDEX idx_investors_status ON investors(status) WHERE deleted_at IS NULL;
+   319→   319→
+   320→   320→CREATE TABLE sectors (
+   321→   321→    id              BIGSERIAL PRIMARY KEY,
+   322→   322→    name            VARCHAR(100) NOT NULL,
+   323→   323→    mobile          VARCHAR(20),
+   324→   324→    address         TEXT,
+   325→   325→    status          VARCHAR(20) DEFAULT 'active',
+   326→   326→    created_at      TIMESTAMPTZ DEFAULT NOW(),
+   327→   327→    updated_at      TIMESTAMPTZ,
+   328→   328→    deleted_at      TIMESTAMPTZ
+   329→   329→);
+   330→   330→
+   331→   331→-- ============================================================
+   332→   332→-- CAPITAL TRANSACTIONS (add / withdraw)
+   333→   333→-- ============================================================
+   334→   334→
+   335→   335→CREATE TABLE investment_transactions (
+   336→   336→    id              BIGSERIAL PRIMARY KEY,
+   337→   337→    investor_id     BIGINT NOT NULL REFERENCES investors(id),
+   338→   338→    amount          DECIMAL(20,2) NOT NULL CHECK (amount > 0),
+   339→   339→    type            VARCHAR(10) NOT NULL CHECK (type IN ('add','withdraw')),
+   340→   340→    transaction_month DATE NOT NULL,        -- always 1st of month
+   341→   341→    transaction_date DATE NOT NULL,
+   342→   342→    remarks         TEXT,
+   343→   343→    batch_uuid      UUID,                   -- groups atomic ops
+   344→   344→    created_by      BIGINT REFERENCES users(id),
+   345→   345→    created_at      TIMESTAMPTZ DEFAULT NOW(),
+   346→   346→    updated_at      TIMESTAMPTZ,
+   347→   347→    deleted_at      TIMESTAMPTZ
+   348→   348→);
+   349→   349→CREATE INDEX idx_inv_tx_investor_month ON investment_transactions(investor_id, transaction_month);
+   350→   350→
+   351→   351→CREATE TABLE sector_investments (
+   352→   352→    id              BIGSERIAL PRIMARY KEY,
+   353→   353→    sector_id       BIGINT NOT NULL REFERENCES sectors(id),
+   354→   354→    amount          DECIMAL(20,2) NOT NULL CHECK (amount > 0),
+   355→   355→    type            VARCHAR(10) NOT NULL CHECK (type IN ('add','withdraw')),
+   356→   356→    transaction_date DATE NOT NULL,
+   357→   357→    remarks         TEXT,
+   358→   358→    batch_uuid      UUID,
+   359→   359→    created_by      BIGINT REFERENCES users(id),
+   360→   360→    created_at      TIMESTAMPTZ DEFAULT NOW(),
+   361→   361→    updated_at      TIMESTAMPTZ,
+   362→   362→    deleted_at      TIMESTAMPTZ
+   363→   363→);
+   364→   364→
+   365→   365→CREATE TABLE director_transactions (
+   366→   366→    id              BIGSERIAL PRIMARY KEY,
+   367→   367→    director_id     BIGINT NOT NULL REFERENCES directors(id),
+   368→   368→    amount          DECIMAL(20,2) NOT NULL CHECK (amount > 0),
+   369→   369→    type            VARCHAR(10) NOT NULL CHECK (type IN ('withdraw','return')),
+   370→   370→    transaction_month DATE NOT NULL,
+   371→   371→    transaction_date DATE NOT NULL,
+   372→   372→    remarks         TEXT,
+   373→   373→    batch_uuid      UUID,
+   374→   374→    created_by      BIGINT REFERENCES users(id),
+   375→   375→    created_at      TIMESTAMPTZ DEFAULT NOW(),
+   376→   376→    updated_at      TIMESTAMPTZ,
+   377→   377→    deleted_at      TIMESTAMPTZ
+   378→   378→);
+   379→   379→
+   380→   380→-- ============================================================
+   381→   381→-- PROFIT ENGINE
+   382→   382→-- ============================================================
+   383→   383→
+   384→   384→-- Per-sector monthly estimated + actual profit
+   385→   385→CREATE TABLE monthly_sector_profit (
+   386→   386→    id              BIGSERIAL PRIMARY KEY,
+   387→   387→    sector_id       BIGINT NOT NULL REFERENCES sectors(id),
+   388→   388→    profit_month    DATE NOT NULL,          -- 1st of month
+   389→   389→    transaction_date DATE,
+   390→   390→    estimated_profit DECIMAL(15,2) DEFAULT 0,   -- Excel Z column (Primary)
+   391→   391→    actual_profit    DECIMAL(15,2) DEFAULT 0,    -- Excel X column
+   392→   392→    profit_adjustment DECIMAL(15,2) DEFAULT 0,
+   393→   393→    is_estimate     BOOLEAN DEFAULT FALSE,
+   394→   394→    status          VARCHAR(20) DEFAULT 'draft'
+   395→   395→                    CHECK (status IN ('draft','finalized')),
+   396→   396→    created_by      BIGINT REFERENCES users(id),
+   397→   397→    created_at      TIMESTAMPTZ DEFAULT NOW(),
+   398→   398→    updated_at      TIMESTAMPTZ,
+   399→   399→    UNIQUE (sector_id, profit_month)
+   400→   400→);
+   401→   401→
+   402→   402→-- Per-investor monthly computed profit (the 8-phase engine output)
+   403→   403→CREATE TABLE investor_monthly_profit_details (
+   404→   404→    id                          BIGSERIAL PRIMARY KEY,
+   405→   405→    profit_month                DATE NOT NULL,
+   406→   406→    transaction_date            DATE,
+   407→   407→    investor_id                 BIGINT NOT NULL REFERENCES investors(id),
+   408→   408→    investment                  DECIMAL(20,2) DEFAULT 0,   -- Excel D
+   409→   409→    investment_ratio            NUMERIC(10,6) DEFAULT 0,   -- Excel E
+   410→   410→    primary_profit_share        DECIMAL(20,2) DEFAULT 0,   -- Excel Q/F (the advance)
+   411→   411→    actual_profit_at_full       DECIMAL(20,2) DEFAULT 0,   -- Excel N (100% share)
+   412→   412→    deed_ratio                  NUMERIC(5,2) DEFAULT 100,  -- Excel AF as %
+   413→   413→    actual_profit_due           DECIMAL(20,2) DEFAULT 0,   -- Excel AG (after tier)
+   414→   414→    advance_difference          DECIMAL(20,2) DEFAULT 0,   -- Excel AH (over/under)
+   415→   415→    retained_earnings_credit    DECIMAL(20,2) DEFAULT 0,   -- Excel AJ
+   416→   416→    net_settlement              DECIMAL(20,2) DEFAULT 0,    -- Excel AK
+   417→   417→    batch_uuid                  UUID,
+   418→   418→    created_by                  BIGINT REFERENCES users(id),
+   419→   419→    created_at                  TIMESTAMPTZ DEFAULT NOW(),
+   420→   420→    updated_at                  TIMESTAMPTZ,
+   421→   421→    UNIQUE (profit_month, investor_id)
+   422→   422→);
+   423→   423→
+   424→   424→-- Month-level totals + M/Y profit
+   425→   425→CREATE TABLE monthly_profit_summary (
+   426→   426→    profit_month                DATE PRIMARY KEY,
+   427→   427→    transaction_date            DATE,
+   428→   428→    total_estimated_profit      DECIMAL(18,2) DEFAULT 0,   -- Excel Z2
+   429→   429→    total_actual_profit         DECIMAL(18,2) DEFAULT 0,   -- Excel X2
+   430→   430→    total_advance_difference    DECIMAL(18,2) DEFAULT 0,   -- Excel Y2 (sector-level)
+   431→   431→    total_investor_advance_diff  DECIMAL(18,2) DEFAULT 0,  -- Excel AH182
+   432→   432→    total_investor_profit_due   DECIMAL(18,2) DEFAULT 0,   -- Excel AG182
+   433→   433→    total_investor_retained     DECIMAL(18,2) DEFAULT 0,   -- Excel AJ182
+   434→   434→    my_profit                   DECIMAL(18,2) DEFAULT 0,   -- Excel AG184
+   435→   435→    my_profit_ratio             NUMERIC(6,2) DEFAULT 0,    -- Excel AG186 %
+   436→   436→    total_mudaraba_investment   DECIMAL(20,2) DEFAULT 0,   -- Excel D181
+   437→   437→    active_investor_count       INT DEFAULT 0,
+   438→   438→    status                      VARCHAR(20) DEFAULT 'open'
+   439→   439→                                CHECK (status IN ('open','finalized','locked')),
+   440→   440→    finalized_by                BIGINT REFERENCES users(id),
+   441→   441→    finalized_at                TIMESTAMPTZ,
+   442→   442→    updated_at                  TIMESTAMPTZ DEFAULT NOW()
+   443→   443→);
+   444→   444→
+   445→   445→-- ============================================================
+   446→   446→-- RETAINED EARNINGS (NEW — was missing in PHP version)
+   447→   447→-- ============================================================
+   448→   448→
+   449→   449→CREATE TABLE retained_earnings (
+   450→   450→    id              BIGSERIAL PRIMARY KEY,
+   451→   451→    profit_month    DATE NOT NULL UNIQUE,
+   452→   452→    total_amount    DECIMAL(18,2) NOT NULL DEFAULT 200000,  -- BDT 200K target
+   453→   453→    investor_portion_pct NUMERIC(5,2) DEFAULT 71.00,
+   454→   454→    my_portion_pct       NUMERIC(5,2) DEFAULT 29.00,
+   455→   455→    investor_amount DECIMAL(18,2) GENERATED ALWAYS AS (total_amount * investor_portion_pct / 100) STORED,
+   456→   456→    my_amount        DECIMAL(18,2) GENERATED ALWAYS AS (total_amount * my_portion_pct / 100) STORED,
+   457→   457→    remarks         TEXT,
+   458→   458→    created_at      TIMESTAMPTZ DEFAULT NOW(),
+   459→   459→    updated_at      TIMESTAMPTZ
+   460→   460→);
+   461→   461→
+   462→   462→CREATE TABLE retained_earnings_distributions (
+   463→   463→    id              BIGSERIAL PRIMARY KEY,
+   464→   464→    profit_month    DATE NOT NULL,
+   465→   465→    investor_id     BIGINT NOT NULL REFERENCES investors(id),
+   466→   466→    investment_ratio NUMERIC(10,6) NOT NULL,
+   467→   467→    amount          DECIMAL(18,2) NOT NULL,    -- = investor_portion × ratio
+   468→   468→    created_at      TIMESTAMPTZ DEFAULT NOW(),
+   469→   469→    UNIQUE (profit_month, investor_id)
+   470→   470→);
+   471→   471→
+   472→   472→-- ============================================================
+   473→   473→-- DUE LEDGERS (cumulative + monthly, per entity)
+   474→   474→-- Pattern preserved from PHP version — proven design
+   475→   475→-- ============================================================
+   476→   476→
+   477→   477→-- Investor capital due (cumulative)
+   478→   478→CREATE TABLE investor_due_ledger (
+   479→   479→    investor_id     BIGINT PRIMARY KEY REFERENCES investors(id),
+   480→   480→    due             DECIMAL(20,2) DEFAULT 0,
+   481→   481→    updated_at      TIMESTAMPTZ DEFAULT NOW()
+   482→   482→);
+   483→   483→CREATE TABLE investor_monthly_due (
+   484→   484→    investor_id     BIGINT NOT NULL REFERENCES investors(id),
+   485→   485→    due_month       DATE NOT NULL,
+   486→   486→    due             DECIMAL(20,2) DEFAULT 0,
+   487→   487→    PRIMARY KEY (investor_id, due_month)
+   488→   488→);
+   489→   489→
+   490→   490→-- Investor *profit* due (separate from capital)
+   491→   491→CREATE TABLE investor_profit_due_ledger (
+   492→   492→    investor_id     BIGINT PRIMARY KEY REFERENCES investors(id),
+   493→   493→    due             DECIMAL(20,2) DEFAULT 0,
+   494→   494→    updated_at      TIMESTAMPTZ DEFAULT NOW()
+   495→   495→);
+   496→   496→CREATE TABLE investor_profit_monthly_due (
+   497→   497→    investor_id     BIGINT NOT NULL REFERENCES investors(id),
+   498→   498→    due_month       DATE NOT NULL,
+   499→   499→    due             DECIMAL(20,2) DEFAULT 0,
+   500→   500→    PRIMARY KEY (investor_id, due_month)
+   501→   501→);
+   502→   502→
+   503→   503→-- Sector due
+   504→   504→CREATE TABLE sector_due_ledger (
+   505→   505→    sector_id       BIGINT PRIMARY KEY REFERENCES sectors(id),
+   506→   506→    due             DECIMAL(20,2) DEFAULT 0
+   507→   507→);
+   508→   508→CREATE TABLE sector_monthly_due (
+   509→   509→    sector_id       BIGINT NOT NULL REFERENCES sectors(id),
+   510→   510→    due_month       DATE NOT NULL,
+   511→   511→    due             DECIMAL(20,2) DEFAULT 0,
+   512→   512→    PRIMARY KEY (sector_id, due_month)
+   513→   513→);
+   514→   514→CREATE TABLE sector_profit_due_ledger (
+   515→   515→    sector_id       BIGINT PRIMARY KEY REFERENCES sectors(id),
+   516→   516→    due             DECIMAL(20,2) DEFAULT 0
+   517→   517→);
+   518→   518→CREATE TABLE sector_profit_monthly_due (
+   519→   519→    sector_id       BIGINT NOT NULL REFERENCES sectors(id),
+   520→   520→    due_month       DATE NOT NULL,
+   521→   521→    due             DECIMAL(20,2) DEFAULT 0,
+   522→   522→    PRIMARY KEY (sector_id, due_month)
+   523→   523→);
+   524→   524→
+   525→   525→-- Director (M/Y) due
+   526→   526→CREATE TABLE director_due_ledger (
+   527→   527→    director_id     BIGINT PRIMARY KEY REFERENCES directors(id),
+   528→   528→    due             DECIMAL(20,2) DEFAULT 0
+   529→   529→);
+   530→   530→CREATE TABLE director_monthly_due (
+   531→   531→    director_id     BIGINT NOT NULL REFERENCES directors(id),
+   532→   532→    due_month       DATE NOT NULL,
+   533→   533→    due             DECIMAL(20,2) DEFAULT 0,
+   534→   534→    PRIMARY KEY (director_id, due_month)
+   535→   535→);
+   536→   536→
+   537→   537→-- ============================================================
+   538→   538→-- ADVANCE PROFIT ADJUSTMENTS (Type A / B / General)
+   539→   539→-- ============================================================
+   540→   540→
+   541→   541→CREATE TABLE advance_profit_adjustments (        -- Type C (general)
+   542→   542→    id              BIGSERIAL PRIMARY KEY,
+   543→   543→    sector_id       BIGINT REFERENCES sectors(id),
+   544→   544→    investor_id     BIGINT REFERENCES investors(id),
+   545→   545→    amount          DECIMAL(20,2) NOT NULL,
+   546→   546→    transaction_date DATE NOT NULL,
+   547→   547→    profit_month    DATE NOT NULL,
+   548→   548→    remarks         TEXT,
+   549→   549→    created_by      BIGINT REFERENCES users(id),
+   550→   550→    created_at      TIMESTAMPTZ DEFAULT NOW()
+   551→   551→);
+   552→   552→
+   553→   553→CREATE TABLE advance_profit_adjustments_type_a (
+   554→   554→    id              BIGSERIAL PRIMARY KEY,
+   555→   555→    transaction_date DATE NOT NULL UNIQUE,
+   556→   556→    amount          DECIMAL(20,2) NOT NULL,
+   557→   557→    remarks         TEXT,
+   558→   558→    created_at      TIMESTAMPTZ DEFAULT NOW()
+   559→   559→);
+   560→   560→
+   561→   561→CREATE TABLE advance_profit_adjustments_type_b (
+   562→   562→    id              BIGSERIAL PRIMARY KEY,
+   563→   563→    transaction_date DATE NOT NULL UNIQUE,
+   564→   564→    amount          DECIMAL(20,2) NOT NULL,
+   565→   565→    remarks         TEXT,
+   566→   566→    created_at      TIMESTAMPTZ DEFAULT NOW()
+   567→   567→);
+   568→   568→
+   569→   569→-- ============================================================
+   570→   570→-- OPENING BALANCES
+   571→   571→-- ============================================================
+   572→   572→
+   573→   573→CREATE TABLE opening_director_due (
+   574→   574→    id              BIGSERIAL PRIMARY KEY,
+   575→   575→    director_id     BIGINT NOT NULL REFERENCES directors(id),
+   576→   576→    amount          DECIMAL(20,2),
+   577→   577→    transaction_date DATE,
+   578→   578→    profit_month    DATE,
+   579→   579→    remarks         TEXT,
+   580→   580→    created_at      TIMESTAMPTZ DEFAULT NOW()
+   581→   581→);
+   582→   582→CREATE TABLE opening_investor_profit_due (
+   583→   583→    id              BIGSERIAL PRIMARY KEY,
+   584→   584→    investor_id     BIGINT NOT NULL REFERENCES investors(id),
+   585→   585→    amount          DECIMAL(20,2),
+   586→   586→    transaction_date DATE,
+   587→   587→    profit_month    DATE,
+   588→   588→    remarks         TEXT,
+   589→   589→    created_at      TIMESTAMPTZ DEFAULT NOW()
+   590→   590→);
+   591→   591→CREATE TABLE opening_sector_profit_due (
+   592→   592→    id              BIGSERIAL PRIMARY KEY,
+   593→   593→    sector_id       BIGINT NOT NULL REFERENCES sectors(id),
+   594→   594→    amount          DECIMAL(20,2),
+   595→   595→    transaction_date DATE,
+   596→   596→    profit_month    DATE,
+   597→   597→    remarks         TEXT,
+   598→   598→    created_at      TIMESTAMPTZ DEFAULT NOW()
+   599→   599→);
+   600→   600→```
+   601→   601→
+   602→   602→### 4.3 Entity-Relationship Summary
+   603→   603→
+   604→   604→```
+   605→   605→users ──< user_permissions >── menus
+   606→   606→users >── employees
+   607→   607→investors ──< investment_transactions
+   608→   608→investors ──< investor_monthly_profit_details >── monthly_profit_summary
+   609→   609→investors ──< investor_due_ledger / investor_monthly_due
+   610→   610→investors ──< investor_profit_due_ledger / investor_profit_monthly_due
+   611→   611→investors ──< retained_earnings_distributions >── retained_earnings
+   612→   612→sectors ──< sector_investments
+   613→   613→sectors ──< monthly_sector_profit
+   614→   614→sectors ──< sector_due_ledger / sector_monthly_due
+   615→   615→sectors ──< sector_profit_due_ledger / sector_profit_monthly_due
+   616→   616→directors ──< director_transactions
+   617→   617→directors ──< director_due_ledger / director_monthly_due
+   618→   618→audit_logs >── users (everywhere)
+   619→   619→```
+   620→   620→
+   621→   621→---
+   622→   622→
+   623→   623→## 5. Business Logic Specification
+   624→   624→
+   625→   625→### 5.1 The 8-Phase Calculation Engine (canonical, from DOCX)
+   626→   626→
+   627→   627→```
+   628→   628→INPUT: 17 sectors × (estimated_profit, actual_profit) for month M
+   629→   629→       151 investors × (investment balance, deed_ratio) as of month M
+   630→   630→
+   631→   631→PHASE 1 — Totals
+   632→   632→  Z2 = Σ sector.estimated_profit         (total primary / advance pool)
+   633→   633→  X2 = Σ sector.actual_profit            (total realized)
+   634→   634→  Y2 = Z2 − X2                           (sector advance difference)
+   635→   635→  D181 = Σ investor.investment           (total mudaraba pool)
+   636→   636→
+   637→   637→PHASE 2 — Per-investor ratio & primary share
+   638→   638→  FOR each investor i:
+   639→   639→    ratio[i]      = investment[i] / D181
+   640→   640→    primary[i]    = ratio[i] × Z2         (paid as advance, start of month)
+   641→   641→    actual_full[i] = ratio[i] × X2       (their 100% entitlement)
+   642→   642→
+   643→   643→PHASE 3 — Tier application
+   644→   644→  actual_due[i] = actual_full[i] × deed_ratio[i] / 100
+   645→   645→  (deed_ratio ∈ {100, 80, 60})
+   646→   646→
+   647→   647→PHASE 4 — Advance difference (receivable/payable)
+   648→   648→  advance_diff[i] = primary[i] − actual_due[i]
+   649→   649→    positive → investor was over-paid, owes M/Y
+   650→   650→    negative → investor under-paid, M/Y owes them
+   651→   651→
+   652→   652→PHASE 5 — Retained earnings distribution (NEW vs PHP version)
+   653→   653→  RE_total = 200,000      (configurable per month)
+   654→   654→  RE_investors = RE_total × 71%  = 142,000
+   655→   655→  RE_my        = RE_total × 29%  = 58,000
+   656→   656→  retained_credit[i] = RE_investors × ratio[i]
+   657→   657→
+   658→   658→PHASE 6 — Net settlement
+   659→   659→  net[i] = advance_diff[i] − retained_credit[i]
+   660→   660→    positive → investor owes M/Y (after retained credit)
+   661→   661→    negative → M/Y owes investor
+   662→   662→
+   663→   663→PHASE 7 — Aggregates
+   664→   664→  AH182 = Σ advance_diff[i]                 (total investor over-payment)
+   665→   665→  AG182 = Σ actual_due[i]                  (total investor profit)
+   666→   666→  AJ182 = Σ retained_credit[i]             (total investor retained credit)
+   667→   667→
+   668→   668→PHASE 8 — M/Y profit
+   669→   669→  my_profit = AH182 − Y2                   (Excel AG184)
+   670→   670→            = (Z2 − AG182) − (Z2 − X2)
+   671→   671→            = X2 − AG182                    (algebraically identical)
+   672→   672→  my_ratio  = my_profit / X2 × 100         (target ≈ 29.13%)
+   673→   673→```
+   674→   674→
+   675→   675→### 5.2 Month Reconciliation Flow
+   676→   676→
+   677→   677→```
+   678→   678→1. M/Y opens month M (status = 'draft')
+   679→   679→2. Enters estimated sector profits → Z column (start of month)
+   680→   680→3. System computes primary_profit_share for all active investors → distributed as advance
+   681→   681→4. Month elapses...
+   682→   682→5. M/Y enters actual sector profits → X column (end of month)
+   683→   683→6. System reconciles:
+   684→   684→   a. Computes actual_due, advance_diff, retained_credit, net per investor
+   685→   685→   b. Updates investor_profit_due_ledger (+/- advance_diff)
+   686→   686→   c. Updates investor_profit_monthly_due
+   687→   687→   d. Updates sector_profit_due_ledger (Y2 differences)
+   688→   688→   e. Updates director_due_ledger (my_profit)
+   689→   689→   f. Writes monthly_profit_summary
+   690→   690→   g. Status → 'finalized'
+   691→   691→7. Lock month (status = 'locked') — no further edits without admin override
+   692→   692→```
+   693→   693→
+   694→   694→### 5.3 Due-Ledger Rollback-on-Edit Pattern (preserved from PHP)
+   695→   695→
+   696→   696→When re-saving a finalized month, the system must NOT double-count. The pattern:
+   697→   697→
+   698→   698→```
+   699→   699→FOR each investor i with prior saved values:
+   700→   700→  old_advance_diff = stored advance_diff
+   701→   701→  new_advance_diff = recomputed advance_diff
+   702→   702→  delta = new_advance_diff − old_advance_diff
+   703→   703→  investor_profit_monthly_due[i][M] += delta
+   704→   704→  investor_profit_due_ledger[i]     += delta
+   705→   705→```
+   706→   706→
+   707→   707→This is implemented as a DB transaction wrapped in a `batch_uuid` for atomicity.
+   708→   708→
+   709→   709→### 5.4 Investment Balance Computation
+   710→   710→
+   711→   711→```
+   712→   712→investment_till_month(investor, M) =
+   713→   713→  Σ (add amounts) − Σ (withdraw amounts)
+   714→   714→  WHERE transaction_month <= M
+   715→   715→```
+   716→   716→
+   717→   717→Stored in `investor_due_ledger` as a running balance, updated on each `investment_transactions` insert.
+   718→   718→
+   719→   719→---
+   720→   720→
+   721→   721→## 6. Phase & Session Roadmap (Overview)
+   722→   722→
+   723→   723→| Phase | Title | Sessions | Est. Effort | Status Gate |
+   724→   724→|-------|-------|----------|-------------|-------------|
+   725→   725→| 0 | Foundation & Design System | 3 | Medium | App boots, design tokens applied |
+   726→   726→| 1 | Database Design & Migrations | 6 | Medium | `php artisan migrate:fresh` clean |
+   727→   727→| 2 | Authentication & RBAC | 4 | Medium | Login works, permissions enforced |
+   728→   728→| 3 | Master Data Management | 4 | Medium | CRUD for investors/sectors/directors |
+   729→   729→| 4 | The Profit Engine | 6 | **High** | Monthly reconciliation matches Excel |
+   730→   730→| 5 | Advance Profit Adjustments | 4 | Medium | Type A/B/C adjustments working |
+   731→   731→| 6 | Opening Balances | 3 | Low | Opening entries migrate PHP data |
+   732→   732→| 7 | Reports & Dashboards | 6 | Medium | All ledgers + dashboard + exports |
+   733→   733→| 8 | Polish & QA | 5 | Medium | Mobile pass, E2E tests, deploy-ready |
+   734→   734→
+   735→   735→**Total: 41 sessions** across 9 phases.
+   736→   736→
+   737→   737→---
+   738→   738→
+   739→   739→## 7. Phase Details
+   740→   740→
+   741→   741→### Phase 0 — Foundation & Design System
+   742→   742→
+   743→   743→**Goal**: A bootable Laravel app with the premium design system in place, ready to receive features.
+   744→   744→
+   745→   745→#### Session 0.1 — Project Scaffolding
+   746→   746→- Install Laravel 11 via `composer create-project laravel/laravel mudaraba`
+   747→   747→- Configure PostgreSQL connection in `.env`
+   748→   748→- Install Inertia.js + React + Vite
+   749→   749→- Install Tailwind CSS 4 + shadcn/ui CLI
+   750→   750→- Install Lucide, Recharts, TanStack Table, React Hook Form, Zod, Sonner, Framer Motion
+   751→   751→- Configure Pint + Larastan + Pest
+   752→   752→- Set up Git repo + initial commit
+   753→   753→- **Deliverable**: App boots at `/`, shows "Mudaraba" placeholder with design tokens
+   754→   754→
+   755→   755→#### Session 0.2 — Design System & Theme
+   756→   756→- Define Tailwind theme tokens (colors from §3.2, typography, spacing)
+   757→   757→- Build base shadcn/ui components: Button, Input, Card, Badge, Dialog, Sheet, Table, Tabs, Toast
+   758→   758→- Light + dark mode via `next-themes` equivalent (`laravel-dark-mode` package or custom)
+   759→   759→- Monospace numeric font for monetary cells
+   760→   760→- **Deliverable**: Storybook-like showcase page rendering all components
+   761→   761→
+   762→   762→#### Session 0.3 — Layout Shell (App Chroma)
+   763→   763→- Build `AuthenticatedLayout` with sticky TopBar (month switcher, search, user menu)
+   764→   764→- Build collapsible Sidebar with menu structure from §3.4
+   765→   765→- Mobile bottom-tab-bar responsive behavior
+   766→   766→- Breadcrumb component
+   767→   767→- Footer (sticky to bottom, pushes down on overflow per house rule)
+   768→   768→- Command palette (`Cmd+K`) scaffold
+   769→   769→- **Deliverable**: Logged-in shell renders responsively on mobile + desktop
+   770→   770→
+   771→   771→---
+   772→   772→
+   773→   773→### Phase 1 — Database Design & Migrations
+   774→   774→
+   775→   775→**Goal**: Clean, enforced, audited schema matching §4.2.
+   776→   776→
+   777→   777→#### Session 1.1 — Core Entity Migrations
+   778→   778→- `users`, `employees`, `menus`, `user_permissions`, `audit_logs`, `directors`, `investors`, `sectors`
+   779→   779→- All FKs, CHECKs, indexes
+   780→   780→- Soft-delete columns
+   781→   781→- **Deliverable**: `php artisan migrate` runs clean
+   782→   782→
+   783→   783→#### Session 1.2 — Transaction Tables
+   784→   784→- `investment_transactions`, `sector_investments`, `director_transactions`
+   785→   785→- `batch_uuid` columns
+   786→   786→- Indexes on `(entity_id, transaction_month)`
+   787→   787→- **Deliverable**: Migration + Eloquent models with relationships
+   788→   788→
+   789→   789→#### Session 1.3 — Profit Engine Tables
+   790→   790→- `monthly_sector_profit`, `investor_monthly_profit_details`, `monthly_profit_summary`
+   791→   791→- Unique constraints on `(profit_month, investor_id)` etc.
+   792→   792→- **Deliverable**: Models + a `ProfitCalculator` service class scaffold
+   793→   793→
+   794→   794→#### Session 1.4 — Due Ledger Tables
+   795→   795→- All 6 entity due-ledger + monthly-due pairs
+   796→   796→- Postgres `ON CONFLICT DO UPDATE` (or MySQL `ON DUPLICATE KEY UPDATE`) upserts
+   797→   797→- **Deliverable**: `DueManager` trait / service implementing `updateDue`, `rollbackDue`, `updateDueAfterRollback`
+   798→   798→
+   799→   799→#### Session 1.5 — Retained Earnings & Adjustments
+   800→   800→- `retained_earnings` (with generated columns for split amounts)
+   801→   801→- `retained_earnings_distributions`
+   802→   802→- `advance_profit_adjustments` + `_type_a` + `_type_b`
+   803→   803→- **Deliverable**: Migration + RetainedEarningsService
+   804→   804→
+   805→   805→#### Session 1.6 — Seeders & Reference Data
+   806→   806→- Seed: default superadmin user, menu tree (matching PHP `menus` table), sample 4 sectors, 6 investors (mimic PHP seed data for parity testing)
+   807→   807→- **Deliverable**: `php artisan db:seed` populates minimal working dataset
+   808→   808→
+   809→   809→---
+   810→   810→
+   811→   811→### Phase 2 — Authentication & RBAC
+   812→   812→
+   813→   813→**Goal**: Premium login experience + granular permissions.
+   814→   814→
+   815→   815→#### Session 2.1 — Login UI (Premium & Creative)
+   816→   816→- Split-screen design: left = brand panel with subtle gradient + Mudaraba illustration; right = login form
+   817→   817→- Floating-label inputs, password visibility toggle, "remember me", forgot password link
+   818→   818→- Micro-interaction: logo pulse, form slide-in
+   819→   819→- Mobile: stacked, brand panel collapses to a header band
+   820→   820→- Error states with inline validation messages
+   821→   821→- **Deliverable**: `/login` renders premium, responsive, accessible (WCAG AA)
+   822→   822→
+   823→   823→#### Session 2.2 — Auth Backend
+   824→   824→- Laravel Fortify (session-based, no Sanctum since operator-only)
+   825→   825→- Login attempt throttling
+   826→   826→- Password hashing (bcrypt)
+   827→   827→- "Remember me" via encrypted cookie
+   828→   828→- Session timeout (30 min idle, matching PHP `config.inc.php`)
+   829→   829→- Login time-window enforcement (`login_start` / `login_end`)
+   830→   830→- **Deliverable**: Login → redirect to dashboard; logout works
+   831→   831→
+   832→   832→#### Session 2.3 — Two-Factor Auth (TOTP)
+   833→   833→- Implement TOTP using `spomky-labs/otphp` (same lib as PHP version)
+   834→   834→- Setup flow: QR code → verify 6-digit code → enable
+   835→   835→- Login flow: after password, prompt for 6-digit code
+   836→   836→- Backup recovery codes
+   837→   837→- **Deliverable**: 2FA enrollable + enforced for superadmin role
+   838→   838→
+   839→   839→#### Session 2.4 — RBAC & Menu Permissions
+   840→   840→- Middleware `permission:view:menu-slug` checks `user_permissions`
+   841→   841→- Sidebar renders only permitted menus
+   842→   842→- Route-level permission enforcement
+   843→   843→- Admin UI to manage permissions per user × menu
+   844→   844→- **Deliverable**: Different roles see different sidebars; direct URL access blocked
+   845→   845→
+   846→   846→---
+   847→   847→
+   848→   848→### Phase 3 — Master Data Management
+   849→   849→
+   850→   850→**Goal**: Full CRUD for investors, sectors, directors with premium list + form UX.
+   851→   851→
+   852→   852→#### Session 3.1 — Investors Module
+   853→   853→- List page: TanStack Table with search, sort, filter (by tier, status), pagination, bulk actions
+   854→   854→- Create/Edit: side-sheet form with validation (Zod), deed_ratio selector (100/80/60 segmented control)
+   855→   855→- Detail page: tabs (Profile, Investments, Profit History, Ledger)
+   856→   856→- Inline activation/deactivation
+   857→   857→- **Deliverable**: Investor CRUD end-to-end, mobile-friendly
+   858→   858→
+   859→   859→#### Session 3.2 — Sectors Module
+   860→   860→- List + Create/Edit similar pattern
+   861→   861→- Show current investment balance + active status
+   862→   862→- **Deliverable**: Sector CRUD
+   863→   863→
+   864→   864→#### Session 3.3 — Directors / M/Y Module
+   865→   865→- List + Create/Edit
+   866→   866→- Flag primary M/Y (`is_my = true`)
+   867→   867→- **Deliverable**: Director CRUD
+   868→   868→
+   869→   869→#### Session 3.4 — Investment Transactions
+   870→   870→- Add/Withdraw form per investor with date picker (restricted by permission `can_backdate`)
+   871→   871→- Real-time running balance preview
+   872→   872→- Transaction history table with color-coded add/withdraw
+   873→   873→- Bulk import via CSV (paste from Excel)
+   874→   874→- **Deliverable**: Investment transaction entry + history
+   875→   875→
+   876→   876→---
+   877→   877→
+   878→   878→### Phase 4 — The Profit Engine
+   879→   879→
+   880→   880→**Goal**: The beating heart — accurate replication of Excel's 8-phase engine with retained earnings.
+   881→   881→
+   882→   882→#### Session 4.1 — Sector Profit Entry UI
+   883→   883→- Monthly sector grid (17 rows × estimated/actual) resembling Excel V5:Z20
+   884→   884→- Inline editable cells with Tab navigation
+   885→   885→- Live totals row (Z2, X2, Y2) updating as you type
+   886→   886→- "Save as Draft" vs "Finalize" buttons
+   887→   887→- Month selector prominent at top
+   888→   888→- **Deliverable**: M/Y can enter sector profits like Excel
+   889→   889→
+   890→   890→#### Session 4.2 — Investor Profit Calculation Engine
+   891→   891→- `ProfitCalculatorService` implementing §5.1 eight phases
+   892→   892→- Triggered on sector profit save
+   893→   893→- Computes per-investor: ratio, primary, actual_full, actual_due, advance_diff
+   894→   894→- Bulk upsert into `investor_monthly_profit_details` within DB transaction
+   895→   895→- **Deliverable**: Saving sector profits auto-computes investor profits
+   896→   896→
+   897→   897→#### Session 4.3 — Retained Earnings Mechanism (NEW)
+   898→   898→- `RetainedEarningsService`: for finalized month, allocate BDT 200K (configurable)
+   899→   899→- Split 71% investors / 29% M/Y automatically
+   900→   900→- Distribute investor portion by ratio → `retained_earnings_distributions`
+   901→   901→- Subtract retained credit from advance_diff → net settlement
+   902→   902→- **Deliverable**: Retained earnings automated per month
+   903→   903→
+   904→   904→#### Session 4.4 — Due Ledger Updates & M/Y Profit
+   905→   905→- After profit calc: update investor profit due ledgers (with rollback-on-edit pattern)
+   906→   906→- Update sector profit due ledgers (Y2 differences)
+   907→   907→- Compute M/Y profit = X2 − Σ actual_due
+   908→   908→- Update director (M/Y) due ledger
+   909→   909→- Write `monthly_profit_summary` totals
+   910→   910→- **Deliverable**: All ledgers consistent after reconciliation
+   911→   911→
+   912→   912→#### Session 4.5 — Investor Profit View (the "For Sajid" page)
+   913→   913→- Premium spreadsheet-like grid: 151 investors × all 8-phase columns
+   914→   914→- Sticky header + sticky totals row (matching Excel AG182, AH182, AG184, AG186)
+   915→   915→- Color-coded advance_diff (green over-paid, red under-paid)
+   916→   916→- Per-investor expandable row showing retained earnings breakdown
+   917→   917→- "Reconcile" CTA finalizes the month
+   918→   918→- Export to Excel (preserves the familiar format)
+   919→   919→- **Deliverable**: Page visually + numerically matches "July, 2026 For Sajid" sheet
+   920→   920→
+   921→   921→#### Session 4.6 — Month Closing & Lock
+   922→   922→- Status workflow: `draft → finalized → locked`
+   923→   923→- Lock action requires admin permission
+   924→   924→- Locked months cannot be edited without admin override (with audit log)
+   925→   925→- Month-end checklist UI: "All 17 sectors entered? All investors calculated? Retained earnings applied?"
+   926→   926→- **Deliverable**: Month lifecycle complete
+   927→   927→
+   928→   928→---
+   929→   929→
+   930→   930→### Phase 5 — Advance Profit Adjustments
+   931→   931→
+   932→   932→**Goal**: Handle the three adjustment types from the PHP system.
+   933→   933→
+   934→   934→#### Session 5.1 — Type A Adjustment
+   935→   935→- Re-implement `AdvanceProfitAdjustmentTypeA` (per-date single amount into `adv_profit_adjusting_fund_type_A`)
+   936→   936→- UI: date picker + amount + remarks
+   937→   937→- Updates relevant due ledger
+   938→   938→- **Deliverable**: Type A entry + list view
+   939→   939→
+   940→   940→#### Session 5.2 — Type B Adjustment
+   941→   941→- Same pattern as Type A into `adv_profit_adjusting_fund_type_B`
+   942→   942→- **Deliverable**: Type B entry + list view
+   943→   943→
+   944→   944→#### Session 5.3 — Type C (General Adjustment)
+   945→   945→- Per sector or per investor adjustment into `advance_profit_adjustments`
+   946→   946→- Links to either sector_id or investor_id
+   947→   947→- **Deliverable**: General adjustment entry
+   948→   948→
+   949→   949→#### Session 5.4 — Adjustment Report
+   950→   950→- Combined view of all adjustments in a date range
+   951→   951→- Filter by type, sector, investor
+   952→   952→- Export to PDF/Excel
+   953→   953→- **Deliverable**: Reconciliation report
+   954→   954→
+   955→   955→---
+   956→   956→
+   957→   957→### Phase 6 — Opening Balances
+   958→   958→
+   959→   959→**Goal**: Carry forward pre-system balances (migrate from PHP/Excel).
+   960→   960→
+   961→   961→#### Session 6.1 — M/Y Opening
+   962→   962→- Form: select director + amount + as-of date + remarks
+   963→   963→- Writes to `opening_director_due` + initializes `director_due_ledger`
+   964→   964→- **Deliverable**: M/Y opening balance set
+   965→   965→
+   966→   966→#### Session 6.2 — Investor Advance Opening
+   967→   967→- Bulk entry: paste investor_id + amount rows
+   968→   968→- Writes to `opening_investor_profit_due` + `investor_profit_due_ledger`
+   969→   969→- **Deliverable**: Investor opening balances imported
+   970→   970→
+   971→   971→#### Session 6.3 — Sector Advance Opening
+   972→   972→- Same pattern for sectors
+   973→   973→- **Deliverable**: Sector opening balances imported
+   974→   974→
+   975→   975→---
+   976→   976→
+   977→   977→### Phase 7 — Reports & Dashboards
+   978→   978→
+   979→   979→**Goal**: Decision-grade visibility + audit-ready exports.
+   980→   980→
+   981→   981→#### Session 7.1 — Dashboard
+   982→   982→- 4 KPI cards (count-up animation): Total Investment, This Month Profit, M/Y Profit YTD, Active Investors
+   983→   983→- Recharts: monthly profit trend (line), sector allocation (donut), investor tier distribution (stacked bar)
+   984→   984→- Recent activity feed (last 10 audit logs)
+   985→   985→- Quick-action buttons
+   986→   986→- **Deliverable**: Dashboard loads < 1s
+   987→   987→
+   988→   988→#### Session 7.2 — Investor Ledger Report
+   989→   989→- Per-investor transaction timeline: capital adds/withdraws + profit distributions + adjustments
+   990→   990→- Running balance column
+   991→   991→- Date-range filter, export to PDF + Excel
+   992→   992→- **Deliverable**: PDF export matches PHP `InvestorLedgerReport` output
+   993→   993→
+   994→   994→#### Session 7.3 — Sector Ledger Report
+   995→   995→- Per-sector: investments + profit history + due
+   996→   996→- Same export pattern
+   997→   997→- **Deliverable**: Sector ledger report
+   998→   998→
+   999→   999→#### Session 7.4 — M/Y Ledger Report
+  1000→  1000→- M/Y withdrawals + profit accruals + retained earnings portion
+  1001→  1001→- **Deliverable**: M/Y ledger report
+  1002→  1002→
+  1003→  1003→#### Session 7.5 — Investment Profit Report
+  1004→  1004→- Cross-investor comparative view: investment / ratio / profit / ratio-over-time
+  1005→  1005→- **Deliverable**: Investment profit report
+  1006→  1006→
+  1007→  1007→#### Session 7.6 — Exports (PDF + Excel)
+  1008→  1008→- Use `barryvdh/laravel-dompdf` for PDF (replaces PHP's dompdf/mpdf)
+  1009→  1009→- Use `maatwebsite/excel` for Excel exports — especially the "For Sajid" sheet replica
+  1010→  1010→- Number-to-words (Bangla taka format) via `kwn/number-to-words` (same as PHP)
+  1011→  1011→- **Deliverable**: All reports exportable
+  1012→  1012→
+  1013→  1013→---
+  1014→  1014→
+  1015→  1015→### Phase 8 — Polish & Quality Assurance
+  1016→  1016→
+  1017→  1017→**Goal**: Production-ready, mobile-perfect, audited.
+  1018→  1018→
+  1019→  1019→#### Session 8.1 — Mobile Responsiveness Audit
+  1020→  1020→- Test every page at 375px / 414px / 768px / 1024px / 1440px
+  1021→  1021→- Fix: table horizontal scroll, modal full-screen on mobile, bottom tab bar coverage
+  1022→  1022→- **Deliverable**: No horizontal scroll on iPhone SE
+  1023→  1023→
+  1024→  1024→#### Session 8.2 — Premium UI Touches
+  1025→  1025→- Framer Motion page transitions
+  1026→  1026→- Skeleton loaders everywhere
+  1027→  1027→- Number count-up animations on KPIs
+  1028→  1028→- Subtle hover states, focus rings
+  1029→  1029→- Empty states with illustrations (use unDraw or similar)
+  1030→  1030→- **Deliverable**: Feels like a premium SaaS
+  1031→  1031→
+  1032→  1032→#### Session 8.3 — Performance Optimization
+  1033→  1033→- Eager-load relationships (N+1 elimination)
+  1034→  1034→- Index audit on slow queries via Laravel Telescope
+  1035→  1035→- Cache dashboard aggregates (5-min TTL)
+  1036→  1036→- Virtualize the 151-row investor grid (TanStack virtual)
+  1037→  1037→- **Deliverable**: Lighthouse score > 90
+  1038→  1038→
+  1039→  1039→#### Session 8.4 — Testing
+  1040→  1040→- Pest feature tests for every calculation phase (verify against Excel "For Sajid" numbers)
+  1041→  1041→- Pest unit tests for `ProfitCalculatorService`, `RetainedEarningsService`, `DueManager`
+  1042→  1042→- Playwright E2E: login → enter sector profits → reconcile → verify M/Y profit = 476,220.07
+  1043→  1043→- **Deliverable**: Test suite green, parity with Excel confirmed
+  1044→  1044→
+  1045→  1045→#### Session 8.5 — Documentation & Deployment
+  1046→  1046→- README with setup steps
+  1047→  1047→- `php artisan` deploy checklist
+  1048→  1048→- Database backup strategy (pg_dump nightly)
+  1049→  1049→- **Deliverable**: Deploy-ready, documented
+  1050→  1050→
+  1051→  1051→---
+  1052→  1052→
+  1053→  1053→## 8. Testing Strategy
+  1054→  1054→
+  1055→  1055→### 8.1 Parity Testing (critical)
+  1056→  1056→The system MUST reproduce the "July, 2026 For Sajid" sheet numbers:
+  1057→  1057→
+  1058→  1058→| Metric | Expected (Excel) | Source |
+  1059→  1059→|--------|------------------|--------|
+  1060→  1060→| Total Mudaraba Investment (D181) | 157,475,000 | investors + transactions |
+  1061→  1061→| Total Primary Profit (Z2) | 1,765,000 | sector estimated Σ |
+  1062→  1062→| Total Actual Profit (X2) | 1,635,000 | sector actual Σ |
+  1063→  1063→| Sector Advance Diff (Y2) | 130,000 | Z2 − X2 |
+  1064→  1064→| Total Investor Profit Due (AG182) | 1,110,024.58 | Σ actual_due |
+  1065→  1065→| Total Investor Advance Diff (AH182) | 606,220.07 | Σ advance_diff |
+  1066→  1066→| M/Y Profit (AG184) | 476,220.07 | X2 − AG182 |
+  1067→  1067→| M/Y Profit Ratio (AG186) | 29.13% | AG184 / X2 |
+  1068→  1068→| Retained Earnings Total | 200,000 | config |
+  1069→  1069→| Investor Retained Portion (AJ4) | 142,000 | 71% of 200K |
+  1070→  1070→| M/Y Retained Portion (AK4) | 58,000 | 29% of 200K |
+  1071→  1071→
+  1072→  1072→A Pest test seeds July 2026 data (17 sectors + 151 investors with their balances) and asserts every above number matches to ±1.00 BDT.
+  1073→  1073→
+  1074→  1074→### 8.2 Test Pyramid
+  1075→  1075→- **Unit**: every Service class method (`ProfitCalculator`, `RetainedEarnings`, `DueManager`)
+  1076→  1076→- **Feature**: every HTTP route (CRUD + reconciliation)
+  1077→  1077→- **Browser (Playwright)**: golden-path workflows (login, monthly run, export)
+  1078→  1078→- **Parity**: the Excel-matching test above
+  1079→  1079→
+  1080→  1080→### 8.3 Static Analysis
+  1081→  1081→- Larastan level 6+ on all `app/Services` (financial logic)
+  1082→  1082→- Pint formatting enforced in CI
+  1083→  1083→
+  1084→  1084→---
+  1085→  1085→
+  1086→  1086→## 9. Risk Register & Mitigation
+  1087→  1087→
+  1088→  1088→| # | Risk | Impact | Mitigation |
+  1089→  1089→|---|------|--------|-----------|
+  1090→  1090→| R1 | Floating-point drift in profit calcs | Pennies off across 151 investors | Use `DECIMAL(20,2)` everywhere; round only at display layer |
+  1091→  1091→| R2 | Double-counting on month re-save | Ledger corruption | Rollback-on-edit pattern (preserved from PHP) + DB transactions + `batch_uuid` |
+  1092→  1092→| R3 | Excel user rejects new UI | Adoption failure | Build the "For Sajid" view to mirror Excel layout; offer Excel export |
+  1093→  1093→| R4 | Retained earnings logic wrong | M/Y profit mismatch | Parity test asserts AG184 = 476,220.07 for July 2026 |
+  1094→  1094→| R5 | Performance on 151-row grid | Sluggish UI | TanStack Table virtualization; defer non-visible rows |
+  1095→  1095→| R6 | Permission bypass via direct URL | Unauthorized access | Route-level middleware + policy classes on every financial route |
+  1096→  1096→| R7 | Audit log grows unbounded | DB bloat | Partition `audit_logs` by month; archive > 2 years |
+  1097→  1097→| R8 | Concurrent month edits | Race condition | Row-level lock on `monthly_profit_summary` during reconcile |
+  1098→  1098→| R9 | Postgres vs MySQL divergence | Migration issues | Stick to ANSI SQL; avoid Postgres-only JSONB in hot paths |
+  1099→  1099→| R10 | Dark mode contrast issues | Readability | Test all monetary cells in both modes; WCAG AA contrast ≥ 4.5:1 |
+  1100→  1100→
+  1101→  1101→---
+  1102→  1102→
+  1103→  1103→## 10. Deployment Notes
+  1104→  1104→
+  1105→  1105→### 10.1 Environments
+  1106→  1106→- **Local**: Laravel Herd / Sail + Postgres in Docker
+  1107→  1107→- **Staging**: VPS (Ubuntu) + Nginx + PHP-FPM + Postgres + Redis
+  1108→  1108→- **Production**: Same as staging, scaled
+  1109→  1109→
+  1110→  1110→### 10.2 CI/CD (GitHub Actions)
+  1111→  1111→```
+  1112→  1112→on: push
+  1113→  1113→jobs:
+  1114→  1114→  lint:        pint --test
+  1115→  1115→  static:      phpstan analyse
+  1116→  1116→  test:        pest --parallel
+  1117→  1117→  parity:      php artisan test --filter=ParityTest
+  1118→  1118→  deploy:     (on main push) ssh deploy script
+  1119→  1119→```
+  1120→  1120→
+  1121→  1121→### 10.3 Backup
+  1122→  1122→- Nightly `pg_dump` of production DB → encrypted offsite
+  1123→  1123→- Daily audit log archive to cold storage
+  1124→  1124→
+  1125→  1125→---
+  1126→  1126→
+  1127→  1127→## 11. Convention & Naming Standards
+  1128→  1128→
+  1129→  1129→### 11.1 Database
+  1130→  1130→- Tables: `snake_case`, plural (`investors`, `monthly_sector_profit`)
+  1131→  1131→- Columns: `snake_case`, `id` as BIGSERIAL PK
+  1132→  1132→- Foreign keys: `{entity}_id` (`investor_id`, `sector_id`)
+  1133→  1133→- Timestamps: `created_at`, `updated_at`, `deleted_at` (TIMESTAMPTZ)
+  1134→  1134→- Money: `DECIMAL(20,2)` — never FLOAT/DOUBLE
+  1135→  1135→- Months: stored as `DATE` (1st of month), displayed as `'YYYY-MM'`
+  1136→  1136→- Booleans: native `BOOLEAN`
+  1137→  1137→
+  1138→  1138→### 11.2 Laravel / PHP
+  1139→  1139→- Models: Singular StudlyCase (`Investor`, `MonthlySectorProfit`)
+  1140→  1140→- Controllers: Resource controllers (`InvestorController`, `SectorProfitController`)
+  1141→  1141→- Services: `*Service` suffix (`ProfitCalculatorService`)
+  1142→  1142→- Form Requests: `*Request` suffix (`StoreInvestorRequest`)
+  1143→  1143→- Policies: `*Policy` (`InvestorPolicy`)
+  1144→  1144→- Enums: PHP 8.1 enums for types (`InvestmentType::Add`, `MonthStatus::Finalized`)
+  1145→  1145→
+  1146→  1146→### 11.3 React / TypeScript
+  1147→  1147→- Components: PascalCase (`InvestorProfitGrid.tsx`)
+  1148→  1148→- Hooks: `use*` prefix (`useMonthReconciliation`)
+  1149→  1149→- Pages: route-segment files under `resources/js/pages/`
+  1150→  1150→- API types: Zod schemas → inferred TS types
+  1151→  1151→
+  1152→  1152→### 11.4 Git
+  1153→  1153→- Branches: `feature/phase-4-investor-profit-grid`, `fix/retained-earnings-rounding`
+  1154→  1154→- Commits: Conventional Commits (`feat:`, `fix:`, `chore:`, `test:`, `docs:`)
+  1155→  1155→- PRs: squash-merge to `main`
+  1156→  1156→
+  1157→  1157→---
+  1158→  1158→
+  1159→  1159→## Appendix A — Source-to-Target Traceability
+  1160→  1160→
+  1161→  1161→| Excel (For Sajid) | PHP (mudaraba repo) | Laravel (this plan) |
+  1162→  1162→|-------------------|---------------------|---------------------|
+  1163→  1163→| Sheet "July, 2026 For Sajid" | `dynamic-page.php?page=Investor-Profit` | `/profit/investor-profit?month=2026-07` |
+  1164→  1164→| V5:V20 sectors | `sectors` table | `sectors` table |
+  1165→  1165→| X5:X20 actual profit | `monthly_sector_profit.actual_profit` | `monthly_sector_profit.actual_profit` |
+  1166→  1166→| Z5:Z20 primary profit | `monthly_sector_profit.estimated_profit` | `monthly_sector_profit.estimated_profit` |
+  1167→  1167→| D181 total inv | `Investments::TotalInvestment()` | `InvestmentTransaction::totalBalance()` |
+  1168→  1168→| E ratio | `investment_ratio` col | `investment_ratio` col |
+  1169→  1169→| Q primary share | `estimated_profit` col | `primary_profit_share` col |
+  1170→  1170→| N actual @ 100% | `actual_profit_before_deed` col | `actual_profit_at_full` col |
+  1171→  1171→| AG actual due | `final_profit` col | `actual_profit_due` col |
+  1172→  1172→| AH advance diff | `advance_paid` col ⚠️ | `advance_difference` col ✓ |
+  1173→  1173→| AI3 retained 200K | ❌ not implemented | `retained_earnings.total_amount` ✓ |
+  1174→  1174→| AJ4 investor 71% | ❌ not implemented | `retained_earnings.investor_amount` ✓ |
+  1175→  1175→| AK4 M/Y 29% | ❌ not implemented | `retained_earnings.my_amount` ✓ |
+  1176→  1176→| AG184 M/Y profit | `monthly_profit_summary.my_amount` | `monthly_profit_summary.my_profit` |
+  1177→  1177→| AG186 M/Y ratio | computed | `monthly_profit_summary.my_profit_ratio` |
+  1178→  1178→
+  1179→  1179→---
+  1180→  1180→
+  1181→  1181→## Appendix B — Session Checklist Template
+  1182→  1182→
+  1183→  1183→Use this checklist at the end of every session:
+  1184→  1184→
+  1185→  1185→```
+  1186→  1186→[ ] Code committed to feature branch
+  1187→  1187→[ ] Pint formatting passes
+  1188→  1188→[ ] Larastan passes (level 6 for Services)
+  1189→  1189→[ ] Relevant Pest tests added / updated
+  1190→  1190→[ ] Parity test still green (if financial logic touched)
+  1191→  1191→[ ] Mobile view verified at 375px
+  1192→  1192→[ ] Dark mode verified
+  1193→  1193→[ ] Sticky footer verified
+  1194→  1194→[ ] Worklog appended to /home/z/my-project/worklog.md
+  1195→  1195→```
+  1196→  1196→
+  1197→  1197→---
+  1198→  1198→
+  1199→  1199→**End of Plan.** This document is the single source of truth for the Laravel rebuild. Any deviation must be recorded as an addendum with rationale.
+  1200→  1200→
