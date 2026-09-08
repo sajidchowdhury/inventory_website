@@ -1,0 +1,1316 @@
+     1→t allows regular users with explicit permission to view sectors                                                                                                  0.36s
+     2→  ✓ it supports search filter on sectors list                                                                                                                         0.36s
+     3→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+     4→   FAILED  Tests\Feature\AuditLogTest > it logs an audit entry when an investment transaction is created
+     5→  Expecting null not to be null .
+     6→
+     7→  at tests/Feature/AuditLogTest.php:71
+     8→     67▕         ->where('entity_id', $tx->id)
+     9→     68▕         ->where('action', 'create')
+    10→     69▕         ->first();
+    11→     70▕
+    12→  ➜  71▕     expect($audit)->not->toBeNull()
+    13→     72▕         ->and($audit->user_id)->toBe($this->superadmin->id)
+    14→     73▕         ->and($audit->after_data)->toHaveKey('amount')
+    15→     74▕         ->and($audit->after_data['amount'])->toBe(500000.0)
+    16→     75▕         ->and($audit->before_data)->toBeNull();
+    17→
+    18→  1   tests/Feature/AuditLogTest.php:71
+    19→
+    20→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+    21→   FAILED  Tests\Feature\AuditLogTest > it logs an audit entry when an investment transaction is deleted (soft-delete)
+    22→  Expecting null not to be null .
+    23→
+    24→  at tests/Feature/AuditLogTest.php:98
+    25→     94▕         ->where('entity_id', $tx->id)
+    26→     95▕         ->where('action', 'delete')
+    27→     96▕         ->first();
+    28→     97▕
+    29→  ➜  98▕     expect($audit)->not->toBeNull()
+    30→     99▕         ->and($audit->before_data)->toHaveKey('amount')
+    31→    100▕         ->and($audit->after_data)->toBeNull();
+    32→    101▕ });
+    33→    102▕
+    34→
+    35→  1   tests/Feature/AuditLogTest.php:98
+    36→
+    37→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+    38→   FAILED  Tests\Feature\AuditLogTest > it logs an audit entry when a sector investment is created
+    39→  Expecting null not to be null .
+    40→
+    41→  at tests/Feature/AuditLogTest.php:122
+    42→    118▕         ->where('entity_id', $inv->id)
+    43→    119▕         ->where('action', 'create')
+    44→    120▕         ->first();
+    45→    121▕
+    46→  ➜ 122▕     expect($audit)->not->toBeNull()
+    47→    123▕         ->and($audit->after_data['amount'])->toBe(300000.0);
+    48→    124▕ });
+    49→    125▕
+    50→    126▕ // ----------------------------------------------------------------------------
+    51→
+    52→  1   tests/Feature/AuditLogTest.php:122
+    53→
+    54→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+    55→   FAILED  Tests\Feature\AuditLogTest > it logs an audit entry when a director transaction is created
+    56→  Expecting null not to be null .
+    57→
+    58→  at tests/Feature/AuditLogTest.php:147
+    59→    143▕         ->where('entity_id', $tx->id)
+    60→    144▕         ->where('action', 'create')
+    61→    145▕         ->first();
+    62→    146▕
+    63→  ➜ 147▕     expect($audit)->not->toBeNull()
+    64→    148▕         ->and($audit->after_data['amount'])->toBe(50000.0)
+    65→    149▕         ->and($audit->after_data['type'])->toBe('withdraw');
+    66→    150▕ });
+    67→    151▕
+    68→
+    69→  1   tests/Feature/AuditLogTest.php:147
+    70→
+    71→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+    72→   FAILED  Tests\Feature\AuditLogTest > it logs a "finalize" audit entry (not "update") when sector profit status changes to finalized
+    73→  Expecting null not to be null .
+    74→
+    75→  at tests/Feature/AuditLogTest.php:178
+    76→    174▕         ->where('entity_id', $msp->id)
+    77→    175▕         ->where('action', 'finalize')
+    78→    176▕         ->first();
+    79→    177▕
+    80→  ➜ 178▕     expect($finalizeAudit)->not->toBeNull()
+    81→    179▕         ->and($finalizeAudit->before_data)->toBe(['status' => 'draft'])
+    82→    180▕         ->and($finalizeAudit->after_data)->toBe(['status' => 'finalized']);
+    83→    181▕
+    84→    182▕     // Should NOT have a generic 'update' entry for this same transition
+    85→
+    86→  1   tests/Feature/AuditLogTest.php:178
+    87→
+    88→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+    89→   FAILED  Tests\Feature\AuditLogTest > it logs a standard "update" audit entry when non-status fields change on sector profit
+    90→  Expecting null not to be null .
+    91→
+    92→  at tests/Feature/AuditLogTest.php:211
+    93→    207▕         ->where('entity_id', $msp->id)
+    94→    208▕         ->where('action', 'update')
+    95→    209▕         ->first();
+    96→    210▕
+    97→  ➜ 211▕     expect($audit)->not->toBeNull()
+    98→    212▕         ->and($audit->before_data)->toHaveKey('estimated_profit')
+    99→    213▕         ->and($audit->after_data['estimated_profit'])->toBe(250000.0)
+   100→    214▕         ->and($audit->before_data['estimated_profit'])->toBe(200000.0);
+   101→    215▕ });
+   102→
+   103→  1   tests/Feature/AuditLogTest.php:211
+   104→
+   105→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   106→   FAILED  Tests\Feature\AuditLogTest > it logs an audit entry when a ProfitAdjustment (Fund A) is created
+   107→  Expecting null not to be null .
+   108→
+   109→  at tests/Feature/AuditLogTest.php:239
+   110→    235▕         ->where('entity_id', $adj->id)
+   111→    236▕         ->where('action', 'create')
+   112→    237▕         ->first();
+   113→    238▕
+   114→  ➜ 239▕     expect($audit)->not->toBeNull()
+   115→    240▕         ->and($audit->after_data['type'])->toBe('fund_a')
+   116→    241▕         ->and($audit->after_data['target_type'])->toBe('investor')
+   117→    242▕         ->and($audit->after_data['amount'])->toBe(5000.0);
+   118→    243▕ });
+   119→
+   120→  1   tests/Feature/AuditLogTest.php:239
+   121→
+   122→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   123→   FAILED  Tests\Feature\AuditLogTest > it logs an audit entry when an AdvanceProfitAdjustment (Type C) is created                                          QueryException
+   124→  SQLSTATE[42P01]: Undefined table: 7 ERROR:  relation "advance_profit_adjustments" does not exist
+   125→LINE 1: insert into "advance_profit_adjustments" ("investor_id", "am...
+   126→                    ^ (Connection: pgsql, Host: postgres, Port: 5432, Database: mudaraba, SQL: insert into "advance_profit_adjustments" ("investor_id", "amount", "transaction_date", "profit_month", "created_by", "updated_at", "created_at") values (14, 3000, 2026-07-15 00:00:00, 2026-07-01, 15, 2026-09-08 15:31:36, 2026-09-08 15:31:36) returning "id")
+   127→
+   128→  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:440
+   129→    436▕             );
+   130→    437▕
+   131→    438▕             $this->bindValues($statement, $this->prepareBindings($bindings));
+   132→    439▕
+   133→  ➜ 440▕             $statement->execute();
+   134→    441▕
+   135→    442▕             return $statement->fetchAll(...$fetchUsing);
+   136→    443▕         });
+   137→    444▕     }
+   138→
+   139→      +17 vendor frames
+   140→  18  tests/Feature/AuditLogTest.php:248
+   141→
+   142→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   143→   FAILED  Tests\Feature\AuditLogTest > it logs an audit entry when an AdvanceProfitAdjustmentTypeA is created                                              QueryException
+   144→  SQLSTATE[42P01]: Undefined table: 7 ERROR:  relation "advance_profit_adjustments_type_a" does not exist
+   145→LINE 1: insert into "advance_profit_adjustments_type_a" ("transactio...
+   146→                    ^ (Connection: pgsql, Host: postgres, Port: 5432, Database: mudaraba, SQL: insert into "advance_profit_adjustments_type_a" ("transaction_date", "amount", "remarks", "created_by", "updated_at", "created_at") values (2026-07-15 00:00:00, 10000, Fund A adjustment, 16, 2026-09-08 15:31:36, 2026-09-08 15:31:36) returning "id")
+   147→
+   148→  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:440
+   149→    436▕             );
+   150→    437▕
+   151→    438▕             $this->bindValues($statement, $this->prepareBindings($bindings));
+   152→    439▕
+   153→  ➜ 440▕             $statement->execute();
+   154→    441▕
+   155→    442▕             return $statement->fetchAll(...$fetchUsing);
+   156→    443▕         });
+   157→    444▕     }
+   158→
+   159→      +17 vendor frames
+   160→  18  tests/Feature/AuditLogTest.php:268
+   161→
+   162→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   163→   FAILED  Tests\Feature\AuditLogTest > it logs an audit entry when an AdvanceProfitAdjustmentTypeB is created                                              QueryException
+   164→  SQLSTATE[42P01]: Undefined table: 7 ERROR:  relation "advance_profit_adjustments_type_b" does not exist
+   165→LINE 1: insert into "advance_profit_adjustments_type_b" ("transactio...
+   166→                    ^ (Connection: pgsql, Host: postgres, Port: 5432, Database: mudaraba, SQL: insert into "advance_profit_adjustments_type_b" ("transaction_date", "amount", "remarks", "created_by", "updated_at", "created_at") values (2026-07-15 00:00:00, 7000, Fund B adjustment, 17, 2026-09-08 15:31:37, 2026-09-08 15:31:37) returning "id")
+   167→
+   168→  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:440
+   169→    436▕             );
+   170→    437▕
+   171→    438▕             $this->bindValues($statement, $this->prepareBindings($bindings));
+   172→    439▕
+   173→  ➜ 440▕             $statement->execute();
+   174→    441▕
+   175→    442▕             return $statement->fetchAll(...$fetchUsing);
+   176→    443▕         });
+   177→    444▕     }
+   178→
+   179→      +17 vendor frames
+   180→  18  tests/Feature/AuditLogTest.php:287
+   181→
+   182→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   183→   FAILED  Tests\Feature\AuditLogTest > it logs audit "create" entries (not delete) for investor monthly profit details during reconcile
+   184→  Expecting null not to be null .
+   185→
+   186→  at tests/Feature/AuditLogTest.php:327
+   187→    323▕     $reconcileAudit = AuditLog::where('action', 'reconcile')
+   188→    324▕         ->where('entity_type', 'monthly_profit_summary')
+   189→    325▕         ->first();
+   190→    326▕
+   191→  ➜ 327▕     expect($reconcileAudit)->not->toBeNull()
+   192→    328▕         ->and($reconcileAudit->user_id)->toBe($this->superadmin->id)
+   193→    329▕         ->and($reconcileAudit->after_data)->toHaveKey('profit_month')
+   194→    330▕         ->and($reconcileAudit->after_data['profit_month'])->toBe('2026-07-01')
+   195→    331▕         ->and($reconcileAudit->after_data)->toHaveKey('my_profit')
+   196→
+   197→  1   tests/Feature/AuditLogTest.php:327
+   198→
+   199→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   200→   FAILED  Tests\Feature\AuditLogTest > it logs a "lock" audit entry (not "update") when a month is locked
+   201→  Expecting null not to be null .
+   202→
+   203→  at tests/Feature/AuditLogTest.php:376
+   204→    372▕     $lockAudit = AuditLog::where('action', 'lock')
+   205→    373▕         ->where('entity_type', 'monthly_profit_summary')
+   206→    374▕         ->first();
+   207→    375▕
+   208→  ➜ 376▕     expect($lockAudit)->not->toBeNull()
+   209→    377▕         ->and($lockAudit->after_data['status'])->toBe('locked');
+   210→    378▕
+   211→    379▕     $updateAudit = AuditLog::where('action', 'update')
+   212→    380▕         ->where('entity_type', 'monthly_profit_summary')
+   213→
+   214→  1   tests/Feature/AuditLogTest.php:376
+   215→
+   216→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   217→   FAILED  Tests\Feature\AuditLogTest > it logs an "unlock" audit entry when a locked month is unlocked
+   218→  Expecting null not to be null .
+   219→
+   220→  at tests/Feature/AuditLogTest.php:410
+   221→    406▕     $unlockAudit = AuditLog::where('action', 'unlock')
+   222→    407▕         ->where('entity_type', 'monthly_profit_summary')
+   223→    408▕         ->first();
+   224→    409▕
+   225→  ➜ 410▕     expect($unlockAudit)->not->toBeNull()
+   226→    411▕         ->and($unlockAudit->before_data['status'])->toBe('locked')
+   227→    412▕         ->and($unlockAudit->after_data['status'])->toBe('finalized');
+   228→    413▕ });
+   229→    414▕
+   230→
+   231→  1   tests/Feature/AuditLogTest.php:410
+   232→
+   233→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   234→   FAILED  Tests\Feature\AuthTest > it authenticates a user with valid credentials
+   235→  Expected response status code [201, 301, 302, 303, 307, 308] but received 419.
+   236→Failed asserting that false is true.
+   237→
+   238→  at tests/Feature/AuthTest.php:33
+   239→     29▕         'password' => 'password123',
+   240→     30▕         'remember' => false,
+   241→     31▕     ]);
+   242→     32▕
+   243→  ➜  33▕     $response->assertRedirect('/dashboard');
+   244→     34▕     expect(auth()->check())->toBeTrue();
+   245→     35▕     expect(auth()->user()->username)->toBe('testuser');
+   246→     36▕ });
+   247→     37▕
+   248→
+   249→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   250→   FAILED  Tests\Feature\AuthTest > it rejects invalid credentials
+   251→  Session is missing expected key [errors].
+   252→Failed asserting that false is true.
+   253→
+   254→  at tests/Feature/AuthTest.php:45
+   255→     41▕         'password' => 'wrongpassword',
+   256→     42▕         'remember' => false,
+   257→     43▕     ]);
+   258→     44▕
+   259→  ➜  45▕     $response->assertSessionHasErrors(['username']);
+   260→     46▕     expect(auth()->check())->toBeFalse();
+   261→     47▕ });
+   262→     48▕
+   263→     49▕ it('rejects inactive users', function () {
+   264→
+   265→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   266→   FAILED  Tests\Feature\AuthTest > it rejects inactive users
+   267→  Session is missing expected key [errors].
+   268→Failed asserting that false is true.
+   269→
+   270→  at tests/Feature/AuthTest.php:58
+   271→     54▕         'password' => 'password123',
+   272→     55▕         'remember' => false,
+   273→     56▕     ]);
+   274→     57▕
+   275→  ➜  58▕     $response->assertSessionHasErrors(['username']);
+   276→     59▕     expect(auth()->check())->toBeFalse();
+   277→     60▕ });
+   278→     61▕
+   279→     62▕ it('logs out the user', function () {
+   280→
+   281→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   282→   FAILED  Tests\Feature\AuthTest > it logs out the user
+   283→  Expected response status code [201, 301, 302, 303, 307, 308] but received 419.
+   284→Failed asserting that false is true.
+   285→
+   286→  at tests/Feature/AuthTest.php:67
+   287→     63▕     $this->actingAs($this->user);
+   288→     64▕
+   289→     65▕     $response = $this->post('/logout');
+   290→     66▕
+   291→  ➜  67▕     $response->assertRedirect('/login');
+   292→     68▕     expect(auth()->check())->toBeFalse();
+   293→     69▕ });
+   294→     70▕
+   295→
+   296→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   297→   FAILED  Tests\Feature\DirectorTest > it allows superadmin to create a director
+   298→  Expected response status code [201, 301, 302, 303, 307, 308] but received 419.
+   299→Failed asserting that false is true.
+   300→
+   301→  at tests/Feature/DirectorTest.php:51
+   302→     47▕             'name' => 'New Test Director',
+   303→     48▕             'is_my' => false,
+   304→     49▕         ]);
+   305→     50▕
+   306→  ➜  51▕     $response->assertRedirect();
+   307→     52▕     expect(Director::where('name', 'New Test Director')->exists())->toBeTrue();
+   308→     53▕ });
+   309→     54▕
+   310→     55▕ it('validates required fields on create', function () {
+   311→
+   312→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   313→   FAILED  Tests\Feature\DirectorTest > it validates required fields on create
+   314→  Session is missing expected key [errors].
+   315→Failed asserting that false is true.
+   316→
+   317→  at tests/Feature/DirectorTest.php:59
+   318→     55▕ it('validates required fields on create', function () {
+   319→     56▕     $response = $this->actingAs($this->superadmin)
+   320→     57▕         ->post('/directors', []);
+   321→     58▕
+   322→  ➜  59▕     $response->assertSessionHasErrors(['name']);
+   323→     60▕ });
+   324→     61▕
+   325→     62▕ it('allows superadmin to edit a director', function () {
+   326→     63▕     $response = $this->actingAs($this->superadmin)
+   327→
+   328→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   329→   FAILED  Tests\Feature\DirectorTest > it allows superadmin to edit a director
+   330→  Expected response status code [201, 301, 302, 303, 307, 308] but received 419.
+   331→Failed asserting that false is true.
+   332→
+   333→  at tests/Feature/DirectorTest.php:69
+   334→     65▕             'name' => 'Updated Director Name',
+   335→     66▕             'is_my' => false,
+   336→     67▕         ]);
+   337→     68▕
+   338→  ➜  69▕     $response->assertRedirect();
+   339→     70▕     expect($this->director->fresh()->name)->toBe('Updated Director Name');
+   340→     71▕ });
+   341→     72▕
+   342→     73▕ it('ensures only one primary M/Y at a time on create', function () {
+   343→
+   344→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   345→   FAILED  Tests\Feature\DirectorTest > it ensures only one primary M/Y at a time on create
+   346→  Expected response status code [201, 301, 302, 303, 307, 308] but received 419.
+   347→Failed asserting that false is true.
+   348→
+   349→  at tests/Feature/DirectorTest.php:84
+   350→     80▕             'name' => 'Second M/Y',
+   351→     81▕             'is_my' => true,
+   352→     82▕         ]);
+   353→     83▕
+   354→  ➜  84▕     $response->assertRedirect();
+   355→     85▕     expect($first->fresh()->is_my)->toBeFalse();
+   356→     86▕
+   357→     87▕     $second = Director::where('name', 'Second M/Y')->first();
+   358→     88▕     expect($second->is_my)->toBeTrue();
+   359→
+   360→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   361→   FAILED  Tests\Feature\DirectorTest > it ensures only one primary M/Y at a time on update
+   362→  Expected response status code [201, 301, 302, 303, 307, 308] but received 419.
+   363→Failed asserting that false is true.
+   364→
+   365→  at tests/Feature/DirectorTest.php:101
+   366→     97▕             'name' => $this->director->name,
+   367→     98▕             'is_my' => true,
+   368→     99▕         ]);
+   369→    100▕
+   370→  ➜ 101▕     $response->assertRedirect();
+   371→    102▕     expect($first->fresh()->is_my)->toBeFalse();
+   372→    103▕     expect($this->director->fresh()->is_my)->toBeTrue();
+   373→    104▕ });
+   374→    105▕
+   375→
+   376→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   377→   FAILED  Tests\Feature\DirectorTest > it soft-deletes a director on destroy
+   378→  Expected response status code [201, 301, 302, 303, 307, 308] but received 419.
+   379→Failed asserting that false is true.
+   380→
+   381→  at tests/Feature/DirectorTest.php:110
+   382→    106▕ it('soft-deletes a director on destroy', function () {
+   383→    107▕     $response = $this->actingAs($this->superadmin)
+   384→    108▕         ->delete("/directors/{$this->director->id}");
+   385→    109▕
+   386→  ➜ 110▕     $response->assertRedirect('/directors');
+   387→    111▕     expect($this->director->fresh()->deleted_at)->not->toBeNull();
+   388→    112▕     expect(Director::withTrashed()->where('id', $this->director->id)->exists())->toBeTrue();
+   389→    113▕ });
+   390→    114▕
+   391→
+   392→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   393→   FAILED  Tests\Feature\InvestmentTransactionTest > it allows superadmin to create an add transaction
+   394→  Expected response status code [201, 301, 302, 303, 307, 308] but received 419.
+   395→Failed asserting that false is true.
+   396→
+   397→  at tests/Feature/InvestmentTransactionTest.php:51
+   398→     47▕             'transaction_month' => '2026-01-01',
+   399→     48▕             'transaction_date' => '2026-01-15',
+   400→     49▕         ]);
+   401→     50▕
+   402→  ➜  51▕     $response->assertRedirect();
+   403→     52▕     $response->assertSessionHas('success');
+   404→     53▕
+   405→     54▕     // Verify transaction record was created
+   406→     55▕     expect(InvestmentTransaction::where('investor_id', $this->investor->id)->count())->toBe(1);
+   407→
+   408→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   409→   FAILED  Tests\Feature\InvestmentTransactionTest > it allows superadmin to create a withdraw transaction
+   410→  Expected response status code [201, 301, 302, 303, 307, 308] but received 419.
+   411→Failed asserting that false is true.
+   412→
+   413→  at tests/Feature/InvestmentTransactionTest.php:83
+   414→     79▕             'transaction_month' => '2026-02-01',
+   415→     80▕             'transaction_date' => '2026-02-10',
+   416→     81▕         ]);
+   417→     82▕
+   418→  ➜  83▕     $response->assertRedirect();
+   419→     84▕
+   420→     85▕     // Verify balance: 500000 - 200000 = 300000
+   421→     86▕     $balance = $this->investor->dueLedger()->first()->due;
+   422→     87▕     expect((float) $balance)->toBe(300000.0);
+   423→
+   424→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   425→   FAILED  Tests\Feature\InvestmentTransactionTest > it rolls back the ledger when a transaction is deleted
+   426→  Expected response status code [201, 301, 302, 303, 307, 308] but received 419.
+   427→Failed asserting that false is true.
+   428→
+   429→  at tests/Feature/InvestmentTransactionTest.php:109
+   430→    105▕     // Delete the transaction (should rollback the ledger)
+   431→    106▕     $response = $this->actingAs($this->superadmin)
+   432→    107▕         ->delete("/investments/{$tx->id}");
+   433→    108▕
+   434→  ➜ 109▕     $response->assertRedirect();
+   435→    110▕
+   436→    111▕     // Verify ledger is back to 0
+   437→    112▕     expect((float) $this->investor->dueLedger()->first()->due)->toBe(0.0);
+   438→    113▕
+   439→
+   440→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   441→   FAILED  Tests\Feature\InvestmentTransactionTest > it validates required fields on create
+   442→  Session is missing expected key [errors].
+   443→Failed asserting that false is true.
+   444→
+   445→  at tests/Feature/InvestmentTransactionTest.php:122
+   446→    118▕ it('validates required fields on create', function () {
+   447→    119▕     $response = $this->actingAs($this->superadmin)
+   448→    120▕         ->post('/investments', []);
+   449→    121▕
+   450→  ➜ 122▕     $response->assertSessionHasErrors(['investor_id', 'amount', 'type', 'transaction_month', 'transaction_date']);
+   451→    123▕ });
+   452→    124▕
+   453→    125▕ it('validates amount must be positive', function () {
+   454→    126▕     $response = $this->actingAs($this->superadmin)
+   455→
+   456→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   457→   FAILED  Tests\Feature\InvestmentTransactionTest > it validates amount must be positive
+   458→  Session is missing expected key [errors].
+   459→Failed asserting that false is true.
+   460→
+   461→  at tests/Feature/InvestmentTransactionTest.php:135
+   462→    131▕             'transaction_month' => '2026-01-01',
+   463→    132▕             'transaction_date' => '2026-01-15',
+   464→    133▕         ]);
+   465→    134▕
+   466→  ➜ 135▕     $response->assertSessionHasErrors(['amount']);
+   467→    136▕ });
+   468→    137▕
+   469→    138▕ it('validates type must be add or withdraw', function () {
+   470→    139▕     $response = $this->actingAs($this->superadmin)
+   471→
+   472→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   473→   FAILED  Tests\Feature\InvestmentTransactionTest > it validates type must be add or withdraw
+   474→  Session is missing expected key [errors].
+   475→Failed asserting that false is true.
+   476→
+   477→  at tests/Feature/InvestmentTransactionTest.php:148
+   478→    144▕             'transaction_month' => '2026-01-01',
+   479→    145▕             'transaction_date' => '2026-01-15',
+   480→    146▕         ]);
+   481→    147▕
+   482→  ➜ 148▕     $response->assertSessionHasErrors(['type']);
+   483→    149▕ });
+   484→    150▕
+   485→    151▕ it('redirects unauthenticated users to login', function () {
+   486→    152▕     $response = $this->get('/investments');
+   487→
+   488→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   489→   FAILED  Tests\Feature\InvestorLedgerTest > it includes profit adjustments in the ledger                                                                  QueryException
+   490→  SQLSTATE[22P02]: Invalid text representation: 7 ERROR:  invalid input syntax for type uuid: "test-batch"
+   491→CONTEXT:  unnamed portal parameter $7 = '...' (Connection: pgsql, Host: postgres, Port: 5432, Database: mudaraba, SQL: insert into "profit_adjustments" ("type", "target_type", "investor_id", "amount", "transaction_date", "profit_month", "batch_uuid", "created_by", "updated_at", "created_at") values (direct, investor, 77, 5000, 2026-07-20 00:00:00, 2026-07-01 00:00:00, test-batch, 122, 2026-09-08 15:32:02, 2026-09-08 15:32:02) returning "id")
+   492→
+   493→  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:440
+   494→    436▕             );
+   495→    437▕
+   496→    438▕             $this->bindValues($statement, $this->prepareBindings($bindings));
+   497→    439▕
+   498→  ➜ 440▕             $statement->execute();
+   499→    441▕
+   500→    442▕             return $statement->fetchAll(...$fetchUsing);
+   501→    443▕         });
+   502→    444▕     }
+   503→
+   504→      +17 vendor frames
+   505→  18  tests/Feature/InvestorLedgerTest.php:121
+   506→
+   507→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   508→   FAILED  Tests\Feature\InvestorTest > it allows superadmin to create an investor
+   509→  Expected response status code [201, 301, 302, 303, 307, 308] but received 419.
+   510→Failed asserting that false is true.
+   511→
+   512→  at tests/Feature/InvestorTest.php:52
+   513→     48▕             'deed_ratio' => '80',
+   514→     49▕             'status' => 'active',
+   515→     50▕         ]);
+   516→     51▕
+   517→  ➜  52▕     $response->assertRedirect();
+   518→     53▕     expect(Investor::where('name', 'New Test Investor')->exists())->toBeTrue();
+   519→     54▕ });
+   520→     55▕
+   521→     56▕ it('validates required fields on create', function () {
+   522→
+   523→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   524→   FAILED  Tests\Feature\InvestorTest > it validates required fields on create
+   525→  Session is missing expected key [errors].
+   526→Failed asserting that false is true.
+   527→
+   528→  at tests/Feature/InvestorTest.php:60
+   529→     56▕ it('validates required fields on create', function () {
+   530→     57▕     $response = $this->actingAs($this->superadmin)
+   531→     58▕         ->post('/investors', []);
+   532→     59▕
+   533→  ➜  60▕     $response->assertSessionHasErrors(['name', 'deed_ratio', 'status']);
+   534→     61▕ });
+   535→     62▕
+   536→     63▕ it('validates deed_ratio must be 60, 80, or 100', function () {
+   537→     64▕     $response = $this->actingAs($this->superadmin)
+   538→
+   539→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   540→   FAILED  Tests\Feature\InvestorTest > it validates deed_ratio must be 60, 80, or 100
+   541→  Session is missing expected key [errors].
+   542→Failed asserting that false is true.
+   543→
+   544→  at tests/Feature/InvestorTest.php:71
+   545→     67▕             'deed_ratio' => '50',
+   546→     68▕             'status' => 'active',
+   547→     69▕         ]);
+   548→     70▕
+   549→  ➜  71▕     $response->assertSessionHasErrors(['deed_ratio']);
+   550→     72▕ });
+   551→     73▕
+   552→     74▕ it('allows superadmin to edit an investor', function () {
+   553→     75▕     $response = $this->actingAs($this->superadmin)
+   554→
+   555→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   556→   FAILED  Tests\Feature\InvestorTest > it allows superadmin to edit an investor
+   557→  Expected response status code [201, 301, 302, 303, 307, 308] but received 419.
+   558→Failed asserting that false is true.
+   559→
+   560→  at tests/Feature/InvestorTest.php:82
+   561→     78▕             'deed_ratio' => '60',
+   562→     79▕             'status' => 'inactive',
+   563→     80▕         ]);
+   564→     81▕
+   565→  ➜  82▕     $response->assertRedirect();
+   566→     83▕     expect($this->investor->fresh()->name)->toBe('Updated Name');
+   567→     84▕     expect($this->investor->fresh()->deed_ratio)->toBe('60');
+   568→     85▕ });
+   569→     86▕
+   570→
+   571→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   572→   FAILED  Tests\Feature\InvestorTest > it soft-deletes an investor on destroy
+   573→  Expected response status code [201, 301, 302, 303, 307, 308] but received 419.
+   574→Failed asserting that false is true.
+   575→
+   576→  at tests/Feature/InvestorTest.php:91
+   577→     87▕ it('soft-deletes an investor on destroy', function () {
+   578→     88▕     $response = $this->actingAs($this->superadmin)
+   579→     89▕         ->delete("/investors/{$this->investor->id}");
+   580→     90▕
+   581→  ➜  91▕     $response->assertRedirect('/investors');
+   582→     92▕     expect($this->investor->fresh()->deleted_at)->not->toBeNull();
+   583→     93▕     // Record still exists in DB (soft delete)
+   584→     94▕     expect(Investor::withTrashed()->where('id', $this->investor->id)->exists())->toBeTrue();
+   585→     95▕ });
+   586→
+   587→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   588→   FAILED  Tests\Feature\LedgerUpdateTest > it does not update ledgers when saving as draft
+   589→  Expected response status code [201, 301, 302, 303, 307, 308] but received 419.
+   590→Failed asserting that false is true.
+   591→
+   592→  at tests/Feature/LedgerUpdateTest.php:207
+   593→    203▕             ],
+   594→    204▕             'finalize' => false,
+   595→    205▕         ]);
+   596→    206▕
+   597→  ➜ 207▕     $response->assertRedirect();
+   598→    208▕
+   599→    209▕     // Ledgers should NOT be updated
+   600→    210▕     $inv1Due = InvestorProfitDueLedger::where('investor_id', $this->inv1->id)->first();
+   601→    211▕     expect((float) $inv1Due->due)->toBe(0.0);
+   602→
+   603→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   604→   FAILED  Tests\Feature\MonthCloseTest > it allows superadmin to lock a finalized month
+   605→  Expected response status code [201, 301, 302, 303, 307, 308] but received 419.
+   606→Failed asserting that false is true.
+   607→
+   608→  at tests/Feature/MonthCloseTest.php:70
+   609→     66▕
+   610→     67▕     $response = $this->actingAs($this->superadmin)
+   611→     68▕         ->post('/month-close/lock', ['month' => '2026-07-01']);
+   612→     69▕
+   613→  ➜  70▕     $response->assertRedirect();
+   614→     71▕     $response->assertSessionHas('success');
+   615→     72▕
+   616→     73▕     $summary = MonthlyProfitSummary::find('2026-07-01');
+   617→     74▕     expect($summary->status->value)->toBe('locked');
+   618→
+   619→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   620→   FAILED  Tests\Feature\MonthCloseTest > it prevents locking a month with no calculation
+   621→  Expected response status code [201, 301, 302, 303, 307, 308] but received 419.
+   622→Failed asserting that false is true.
+   623→
+   624→  at tests/Feature/MonthCloseTest.php:83
+   625→     79▕ it('prevents locking a month with no calculation', function () {
+   626→     80▕     $response = $this->actingAs($this->superadmin)
+   627→     81▕         ->post('/month-close/lock', ['month' => '2026-07-01']);
+   628→     82▕
+   629→  ➜  83▕     $response->assertRedirect();
+   630→     84▕     $response->assertSessionHas('error');
+   631→     85▕ });
+   632→     86▕
+   633→     87▕ it('prevents locking an already locked month', function () {
+   634→
+   635→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   636→   FAILED  Tests\Feature\MonthCloseTest > it prevents locking an already locked month
+   637→  Session is missing expected key [error].
+   638→Failed asserting that false is true.
+   639→
+   640→  at tests/Feature/MonthCloseTest.php:103
+   641→     99▕     // Try to lock again
+   642→    100▕     $response = $this->actingAs($this->superadmin)
+   643→    101▕         ->post('/month-close/lock', ['month' => '2026-07-01']);
+   644→    102▕
+   645→  ➜ 103▕     $response->assertSessionHas('error');
+   646→    104▕ });
+   647→    105▕
+   648→    106▕ it('allows superadmin to unlock a locked month', function () {
+   649→    107▕     MonthlySectorProfit::create([
+   650→
+   651→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   652→   FAILED  Tests\Feature\MonthCloseTest > it allows superadmin to unlock a locked month
+   653→  Expected response status code [201, 301, 302, 303, 307, 308] but received 419.
+   654→Failed asserting that false is true.
+   655→
+   656→  at tests/Feature/MonthCloseTest.php:122
+   657→    118▕     // Unlock
+   658→    119▕     $response = $this->actingAs($this->superadmin)
+   659→    120▕         ->post('/month-close/unlock', ['month' => '2026-07-01']);
+   660→    121▕
+   661→  ➜ 122▕     $response->assertRedirect();
+   662→    123▕     $response->assertSessionHas('success');
+   663→    124▕
+   664→    125▕     $summary = MonthlyProfitSummary::find('2026-07-01');
+   665→    126▕     expect($summary->status->value)->toBe('finalized');
+   666→
+   667→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   668→   FAILED  Tests\Feature\MonthCloseTest > it blocks regular users from locking
+   669→  Expected response status code [403] but received 419.
+   670→Failed asserting that 419 is identical to 403.
+   671→
+   672→  at tests/Feature/MonthCloseTest.php:135
+   673→    131▕ it('blocks regular users from locking', function () {
+   674→    132▕     $response = $this->actingAs($this->regularUser)
+   675→    133▕         ->post('/month-close/lock', ['month' => '2026-07-01']);
+   676→    134▕
+   677→  ➜ 135▕     $response->assertStatus(403);
+   678→    136▕ });
+   679→    137▕
+   680→    138▕ it('blocks regular users from unlocking', function () {
+   681→    139▕     $response = $this->actingAs($this->regularUser)
+   682→
+   683→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   684→   FAILED  Tests\Feature\MonthCloseTest > it blocks regular users from unlocking
+   685→  Expected response status code [403] but received 419.
+   686→Failed asserting that 419 is identical to 403.
+   687→
+   688→  at tests/Feature/MonthCloseTest.php:142
+   689→    138▕ it('blocks regular users from unlocking', function () {
+   690→    139▕     $response = $this->actingAs($this->regularUser)
+   691→    140▕         ->post('/month-close/unlock', ['month' => '2026-07-01']);
+   692→    141▕
+   693→  ➜ 142▕     $response->assertStatus(403);
+   694→    143▕ });
+   695→    144▕
+   696→    145▕ it('returns checklist with correct completion states', function () {
+   697→    146▕     MonthlySectorProfit::create([
+   698→
+   699→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   700→   FAILED  Tests\Feature\MonthCloseTest > it passes isLocked to sector profit page
+   701→  Property [isLocked] does not match the expected value.
+   702→Failed asserting that false is identical to true.
+   703→
+   704→  at tests/Feature/MonthCloseTest.php:192
+   705→    188▕
+   706→    189▕     $response = $this->actingAs($this->superadmin)
+   707→    190▕         ->get('/profit/sector?month=2026-07-01');
+   708→    191▕
+   709→  ➜ 192▕     $response->assertInertia(fn ($page) => $page->where('isLocked', true));
+   710→    193▕ });
+   711→    194▕
+   712→
+   713→      +2 vendor frames
+   714→  3   tests/Feature/MonthCloseTest.php:192
+   715→
+   716→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   717→   FAILED  Tests\Feature\OpeningBalanceTest > it updates director (M/Y) opening balance
+   718→  Expected response status code [201, 301, 302, 303, 307, 308] but received 419.
+   719→Failed asserting that false is true.
+   720→
+   721→  at tests/Feature/OpeningBalanceTest.php:46
+   722→     42▕ it('updates director (M/Y) opening balance', function () {
+   723→     43▕     $response = $this->actingAs($this->superadmin)
+   724→     44▕         ->put("/opening/director/{$this->director->id}", ['due' => 136162]);
+   725→     45▕
+   726→  ➜  46▕     $response->assertRedirect();
+   727→     47▕     $response->assertSessionHas('success');
+   728→     48▕
+   729→     49▕     $ledger = DirectorDueLedger::where('director_id', $this->director->id)->first();
+   730→     50▕     expect($ledger)->not->toBeNull();
+   731→
+   732→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   733→   FAILED  Tests\Feature\OpeningBalanceTest > it creates director ledger if it does not exist
+   734→  Failed asserting that false is true.
+   735→
+   736→  at tests/Feature/OpeningBalanceTest.php:60
+   737→     56▕
+   738→     57▕     $this->actingAs($this->superadmin)
+   739→     58▕         ->put("/opening/director/{$this->director->id}", ['due' => 50000]);
+   740→     59▕
+   741→  ➜  60▕     expect(DirectorDueLedger::where('director_id', $this->director->id)->exists())->toBeTrue();
+   742→     61▕ });
+   743→     62▕
+   744→     63▕ it('updates existing director ledger without creating duplicate', function () {
+   745→     64▕     DirectorDueLedger::create(['director_id' => $this->director->id, 'due' => 100000]);
+   746→
+   747→  1   tests/Feature/OpeningBalanceTest.php:60
+   748→
+   749→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   750→   FAILED  Tests\Feature\OpeningBalanceTest > it updates existing director ledger without creating duplicate
+   751→  Failed asserting that 100000.0 is identical to 150000.0.
+   752→
+   753→  at tests/Feature/OpeningBalanceTest.php:73
+   754→     69▕     $count = DirectorDueLedger::where('director_id', $this->director->id)->count();
+   755→     70▕     expect($count)->toBe(1);
+   756→     71▕
+   757→     72▕     $ledger = DirectorDueLedger::where('director_id', $this->director->id)->first();
+   758→  ➜  73▕     expect((float) $ledger->due)->toBe(150000.0);
+   759→     74▕ });
+   760→     75▕
+   761→     76▕ it('bulk updates investor opening balances (capital + profit)', function () {
+   762→     77▕     $response = $this->actingAs($this->superadmin)
+   763→
+   764→  1   tests/Feature/OpeningBalanceTest.php:73
+   765→
+   766→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   767→   FAILED  Tests\Feature\OpeningBalanceTest > it bulk updates investor opening balances (capital + profit)
+   768→  Expected response status code [201, 301, 302, 303, 307, 308] but received 419.
+   769→Failed asserting that false is true.
+   770→
+   771→  at tests/Feature/OpeningBalanceTest.php:85
+   772→     81▕                 ['id' => $this->inv2->id, 'capital_due' => 300000, 'profit_due' => 0],
+   773→     82▕             ],
+   774→     83▕         ]);
+   775→     84▕
+   776→  ➜  85▕     $response->assertRedirect();
+   777→     86▕     $response->assertSessionHas('success');
+   778→     87▕
+   779→     88▕     // Verify capital ledgers
+   780→     89▕     $inv1Capital = InvestorDueLedger::where('investor_id', $this->inv1->id)->first();
+   781→
+   782→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   783→   FAILED  Tests\Feature\OpeningBalanceTest > it bulk updates sector opening balances (capital + profit)
+   784→  Expected response status code [201, 301, 302, 303, 307, 308] but received 419.
+   785→Failed asserting that false is true.
+   786→
+   787→  at tests/Feature/OpeningBalanceTest.php:112
+   788→    108▕                 ['id' => $this->sector2->id, 'capital_due' => 44603550, 'profit_due' => 0],
+   789→    109▕             ],
+   790→    110▕         ]);
+   791→    111▕
+   792→  ➜ 112▕     $response->assertRedirect();
+   793→    113▕
+   794→    114▕     $sec1Capital = SectorDueLedger::where('sector_id', $this->sector1->id)->first();
+   795→    115▕     expect((float) $sec1Capital->due)->toBe(46155000.0);
+   796→    116▕
+   797→
+   798→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   799→   FAILED  Tests\Feature\OpeningBalanceTest > it validates required fields for director update
+   800→  Session is missing expected key [errors].
+   801→Failed asserting that false is true.
+   802→
+   803→  at tests/Feature/OpeningBalanceTest.php:142
+   804→    138▕ it('validates required fields for director update', function () {
+   805→    139▕     $response = $this->actingAs($this->superadmin)
+   806→    140▕         ->put("/opening/director/{$this->director->id}", []);
+   807→    141▕
+   808→  ➜ 142▕     $response->assertSessionHasErrors(['due']);
+   809→    143▕ });
+   810→    144▕
+   811→    145▕ it('validates required fields for investor bulk update', function () {
+   812→    146▕     $response = $this->actingAs($this->superadmin)
+   813→
+   814→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   815→   FAILED  Tests\Feature\OpeningBalanceTest > it validates required fields for investor bulk update
+   816→  Session is missing expected key [errors].
+   817→Failed asserting that false is true.
+   818→
+   819→  at tests/Feature/OpeningBalanceTest.php:149
+   820→    145▕ it('validates required fields for investor bulk update', function () {
+   821→    146▕     $response = $this->actingAs($this->superadmin)
+   822→    147▕         ->put('/opening/investors', []);
+   823→    148▕
+   824→  ➜ 149▕     $response->assertSessionHasErrors(['items']);
+   825→    150▕ });
+   826→    151▕
+   827→    152▕ it('excludes closed investors from the list', function () {
+   828→    153▕     $closedInv = Investor::factory()->create(['name' => 'Closed Inv', 'status' => 'closed']);
+   829→
+   830→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   831→   FAILED  Tests\Feature\ParitySeederTest > it seeds exactly 150 investors (matches January 2026 data)
+   832→  Failed asserting that 158 is identical to 150.
+   833→
+   834→  at tests/Feature/ParitySeederTest.php:60
+   835→     56▕     expect(Sector::count())->toBe(16);
+   836→     57▕ });
+   837→     58▕
+   838→     59▕ it('seeds exactly 150 investors (matches January 2026 data)', function () {
+   839→  ➜  60▕     expect(\App\Models\Investor::count())->toBe(150);
+   840→     61▕ });
+   841→     62▕
+   842→     63▕ it('seeds MonthlySectorProfit rows for BOTH January and July 2026', function () {
+   843→     64▕     $janCount = MonthlySectorProfit::where('profit_month', '2026-01-01')->count();
+   844→
+   845→  1   tests/Feature/ParitySeederTest.php:60
+   846→
+   847→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   848→   FAILED  Tests\Feature\PermissionTest > it allows superadmin to update a user permission
+   849→  Expected response status code [201, 301, 302, 303, 307, 308] but received 419.
+   850→Failed asserting that false is true.
+   851→
+   852→  at tests/Feature/PermissionTest.php:104
+   853→    100▕             'can_delete' => false,
+   854→    101▕             'can_backdate' => false,
+   855→    102▕         ]);
+   856→    103▕
+   857→  ➜ 104▕     $response->assertRedirect();
+   858→    105▕     $response->assertSessionHas('success');
+   859→    106▕
+   860→    107▕     $perm = UserPermission::where('user_id', $this->user->id)
+   861→    108▕         ->where('menu_id', $menu->id)
+   862→
+   863→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   864→   FAILED  Tests\Feature\PermissionTest > it blocks non-superadmin from updating permissions
+   865→  Expected response status code [403] but received 419.
+   866→Failed asserting that 419 is identical to 403.
+   867→
+   868→  at tests/Feature/PermissionTest.php:127
+   869→    123▕         ->put("/admin/permissions/{$this->superadmin->id}/{$menu->id}", [
+   870→    124▕             'can_view' => true,
+   871→    125▕         ]);
+   872→    126▕
+   873→  ➜ 127▕     $response->assertStatus(403);
+   874→    128▕ });
+   875→    129▕
+   876→
+   877→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   878→   FAILED  Tests\Feature\ProfitAdjustmentTest > it stores a Fund A batch adjustment with investor + sector items
+   879→  Expected response status code [201, 301, 302, 303, 307, 308] but received 419.
+   880→Failed asserting that false is true.
+   881→
+   882→  at tests/Feature/ProfitAdjustmentTest.php:52
+   883→     48▕                 ['sector_id' => $this->sector1->id, 'amount' => 4000],
+   884→     49▕             ],
+   885→     50▕         ]);
+   886→     51▕
+   887→  ➜  52▕     $response->assertRedirect();
+   888→     53▕     $response->assertSessionHas('success');
+   889→     54▕
+   890→     55▕     // Verify 3 adjustment records created (2 investor + 1 sector)
+   891→     56▕     expect(ProfitAdjustment::count())->toBe(3);
+   892→
+   893→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   894→   FAILED  Tests\Feature\ProfitAdjustmentTest > it updates investor profit due ledger on batch adjustment
+   895→  Failed asserting that 0.0 is identical to -5000.0.
+   896→
+   897→  at tests/Feature/ProfitAdjustmentTest.php:74
+   898→     70▕         ]);
+   899→     71▕
+   900→     72▕     // Inv1's profit due should be -5000 (decreased by 5000)
+   901→     73▕     $due = InvestorProfitDueLedger::where('investor_id', $this->inv1->id)->first();
+   902→  ➜  74▕     expect((float) $due->due)->toBe(-5000.0);
+   903→     75▕ });
+   904→     76▕
+   905→     77▕ it('updates sector profit due ledger on batch adjustment', function () {
+   906→     78▕     $this->actingAs($this->superadmin)
+   907→
+   908→  1   tests/Feature/ProfitAdjustmentTest.php:74
+   909→
+   910→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   911→   FAILED  Tests\Feature\ProfitAdjustmentTest > it updates sector profit due ledger on batch adjustment
+   912→  Failed asserting that 0.0 is identical to -4000.0.
+   913→
+   914→  at tests/Feature/ProfitAdjustmentTest.php:90
+   915→     86▕             ],
+   916→     87▕         ]);
+   917→     88▕
+   918→     89▕     $due = SectorProfitDueLedger::where('sector_id', $this->sector1->id)->first();
+   919→  ➜  90▕     expect((float) $due->due)->toBe(-4000.0);
+   920→     91▕ });
+   921→     92▕
+   922→     93▕ it('computes Fund A balance correctly (investors - sectors)', function () {
+   923→     94▕     // Fund A: investor adjustments = 5000 + 3000 = 8000
+   924→
+   925→  1   tests/Feature/ProfitAdjustmentTest.php:90
+   926→
+   927→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   928→   FAILED  Tests\Feature\ProfitAdjustmentTest > it computes Fund A balance correctly (investors - sectors)
+   929→  Failed asserting that 0.0 is identical to 4000.0.
+   930→
+   931→  at tests/Feature/ProfitAdjustmentTest.php:112
+   932→    108▕             ],
+   933→    109▕         ]);
+   934→    110▕
+   935→    111▕     $balance = ProfitAdjustment::fundBalance(AdjustmentType::FundA);
+   936→  ➜ 112▕     expect($balance)->toBe(4000.0);  // 8000 - 4000 = 4000
+   937→    113▕ });
+   938→    114▕
+   939→    115▕ it('keeps Fund A and Fund B balances separate', function () {
+   940→    116▕     // Fund A: investor 5000, sector 0 → balance = 5000
+   941→
+   942→  1   tests/Feature/ProfitAdjustmentTest.php:112
+   943→
+   944→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   945→   FAILED  Tests\Feature\ProfitAdjustmentTest > it keeps Fund A and Fund B balances separate
+   946→  Failed asserting that 0.0 is identical to 5000.0.
+   947→
+   948→  at tests/Feature/ProfitAdjustmentTest.php:137
+   949→    133▕             'investor_items' => [],
+   950→    134▕             'sector_items' => [['sector_id' => $this->sector1->id, 'amount' => 1000]],
+   951→    135▕         ]);
+   952→    136▕
+   953→  ➜ 137▕     expect(ProfitAdjustment::fundBalance(AdjustmentType::FundA))->toBe(5000.0);
+   954→    138▕     expect(ProfitAdjustment::fundBalance(AdjustmentType::FundB))->toBe(1000.0); // +Σ sector
+   955→    139▕ });
+   956→    140▕
+   957→    141▕ it('stores a direct (investor-wise) adjustment — sector + investor both debited', function () {
+   958→
+   959→  1   tests/Feature/ProfitAdjustmentTest.php:137
+   960→
+   961→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   962→   FAILED  Tests\Feature\ProfitAdjustmentTest > it stores a direct (investor-wise) adjustment — sector + investor both debited
+   963→  Expected response status code [201, 301, 302, 303, 307, 308] but received 419.
+   964→Failed asserting that false is true.
+   965→
+   966→  at tests/Feature/ProfitAdjustmentTest.php:152
+   967→    148▕             'transaction_date' => '2026-07-20',
+   968→    149▕             'profit_month' => '2026-07-01',
+   969→    150▕         ]);
+   970→    151▕
+   971→  ➜ 152▕     $response->assertRedirect();
+   972→    153▕
+   973→    154▕     // 2 records: one investor-side, one sector-side (same batch)
+   974→    155▕     expect(ProfitAdjustment::where('type', 'direct')->count())->toBe(2);
+   975→    156▕
+   976→
+   977→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   978→   FAILED  Tests\Feature\ProfitAdjustmentTest > it rolls back ledger on delete
+   979→  Failed asserting that 0.0 is identical to -10000.0.
+   980→
+   981→  at tests/Feature/ProfitAdjustmentTest.php:201
+   982→    197▕         ]);
+   983→    198▕
+   984→    199▕     // Verify due was decreased
+   985→    200▕     $due = InvestorProfitDueLedger::where('investor_id', $this->inv1->id)->first();
+   986→  ➜ 201▕     expect((float) $due->due)->toBe(-10000.0);
+   987→    202▕
+   988→    203▕     // Delete the investor-side adjustment
+   989→    204▕     $adj = ProfitAdjustment::where('target_type', 'investor')->first();
+   990→    205▕     $response = $this->actingAs($this->superadmin)
+   991→
+   992→  1   tests/Feature/ProfitAdjustmentTest.php:201
+   993→
+   994→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   995→   FAILED  Tests\Feature\ProfitAdjustmentTest > it validates required fields for batch
+   996→  Session is missing expected key [errors].
+   997→Failed asserting that false is true.
+   998→
+   999→  at tests/Feature/ProfitAdjustmentTest.php:237
+  1000→    233▕ it('validates required fields for batch', function () {
+  1001→    234▕     $response = $this->actingAs($this->superadmin)
+  1002→    235▕         ->post('/adjustments/batch', []);
+  1003→    236▕
+  1004→  ➜ 237▕     $response->assertSessionHasErrors(['type', 'transaction_date', 'profit_month']);
+  1005→    238▕ });
+  1006→    239▕
+  1007→    240▕ it('validates required fields for direct', function () {
+  1008→    241▕     $response = $this->actingAs($this->superadmin)
+  1009→
+  1010→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  1011→   FAILED  Tests\Feature\ProfitAdjustmentTest > it validates required fields for direct
+  1012→  Session is missing expected key [errors].
+  1013→Failed asserting that false is true.
+  1014→
+  1015→  at tests/Feature/ProfitAdjustmentTest.php:244
+  1016→    240▕ it('validates required fields for direct', function () {
+  1017→    241▕     $response = $this->actingAs($this->superadmin)
+  1018→    242▕         ->post('/adjustments/direct', []);
+  1019→    243▕
+  1020→  ➜ 244▕     $response->assertSessionHasErrors(['mode', 'sector_id', 'total_amount', 'transaction_date', 'profit_month']);
+  1021→    245▕ });
+  1022→    246▕
+  1023→    247▕ it('skips zero-amount entries in batch', function () {
+  1024→    248▕     $this->actingAs($this->superadmin)
+  1025→
+  1026→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  1027→   FAILED  Tests\Feature\ProfitAdjustmentTest > it skips zero-amount entries in batch
+  1028→  Failed asserting that 0 is identical to 1.
+  1029→
+  1030→  at tests/Feature/ProfitAdjustmentTest.php:261
+  1031→    257▕             'sector_items' => [],
+  1032→    258▕         ]);
+  1033→    259▕
+  1034→    260▕     // Only 1 record should be created (inv2 with 0 is skipped)
+  1035→  ➜ 261▕     expect(ProfitAdjustment::count())->toBe(1);
+  1036→    262▕ });
+  1037→    263▕
+  1038→    264▕ it('supports filtering by type', function () {
+  1039→    265▕     ProfitAdjustment::create([
+  1040→
+  1041→  1   tests/Feature/ProfitAdjustmentTest.php:261
+  1042→
+  1043→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  1044→   FAILED  Tests\Feature\ProfitAdjustmentTest > it supports filtering by type                                                                               QueryException
+  1045→  SQLSTATE[22P02]: Invalid text representation: 7 ERROR:  invalid input syntax for type uuid: "test-1"
+  1046→CONTEXT:  unnamed portal parameter $7 = '...' (Connection: pgsql, Host: postgres, Port: 5432, Database: mudaraba, SQL: insert into "profit_adjustments" ("type", "target_type", "investor_id", "amount", "transaction_date", "profit_month", "batch_uuid", "created_by", "updated_at", "created_at") values (fund_a, investor, 210, 1000, 2026-07-01 00:00:00, 2026-07-01 00:00:00, test-1, 279, 2026-09-08 15:32:49, 2026-09-08 15:32:49) returning "id")
+  1047→
+  1048→  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:440
+  1049→    436▕             );
+  1050→    437▕
+  1051→    438▕             $this->bindValues($statement, $this->prepareBindings($bindings));
+  1052→    439▕
+  1053→  ➜ 440▕             $statement->execute();
+  1054→    441▕
+  1055→    442▕             return $statement->fetchAll(...$fetchUsing);
+  1056→    443▕         });
+  1057→    444▕     }
+  1058→
+  1059→      +17 vendor frames
+  1060→  18  tests/Feature/ProfitAdjustmentTest.php:265
+  1061→
+  1062→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  1063→   FAILED  Tests\Feature\ProfitAdjustmentTest > it rejects investor_items for Fund B (sector-only per PHP spec §5)
+  1064→  Session is missing expected key [errors].
+  1065→Failed asserting that false is true.
+  1066→
+  1067→  at tests/Feature/ProfitAdjustmentTest.php:297
+  1068→    293▕             'sector_items' => [['sector_id' => $this->sector1->id, 'amount' => 1000]],
+  1069→    294▕         ]);
+  1070→    295▕
+  1071→    296▕     // Should redirect back with errors (investor_items forbidden for Fund B)
+  1072→  ➜ 297▕     $response->assertSessionHasErrors(['investor_items']);
+  1073→    298▕
+  1074→    299▕     // No records should have been created
+  1075→    300▕     expect(ProfitAdjustment::count())->toBe(0);
+  1076→    301▕ });
+  1077→
+  1078→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  1079→   FAILED  Tests\Feature\ProfitAdjustmentTest > it stores a direct as-per-invest adjustment (bulk investors by ratio)
+  1080→  Expected response status code [201, 301, 302, 303, 307, 308] but received 419.
+  1081→Failed asserting that false is true.
+  1082→
+  1083→  at tests/Feature/ProfitAdjustmentTest.php:317
+  1084→    313▕                 ['investor_id' => $this->inv2->id, 'amount' => 4000],
+  1085→    314▕             ],
+  1086→    315▕         ]);
+  1087→    316▕
+  1088→  ➜ 317▕     $response->assertRedirect();
+  1089→    318▕
+  1090→    319▕     // 3 records: 1 sector (total) + 2 investors
+  1091→    320▕     expect(ProfitAdjustment::where('type', 'direct')->count())->toBe(3);
+  1092→    321▕
+  1093→
+  1094→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  1095→   FAILED  Tests\Feature\ProfitCalculatorTest > it is triggered when sector profits are finalized via the controller
+  1096→  Expected response status code [201, 301, 302, 303, 307, 308] but received 419.
+  1097→Failed asserting that false is true.
+  1098→
+  1099→  at tests/Feature/ProfitCalculatorTest.php:211
+  1100→    207▕             ],
+  1101→    208▕             'finalize' => true,
+  1102→    209▕         ]);
+  1103→    210▕
+  1104→  ➜ 211▕     $response->assertRedirect();
+  1105→    212▕     $response->assertSessionHas('success');
+  1106→    213▕
+  1107→    214▕     // Verify investor details were created (calculation was triggered)
+  1108→    215▕     expect(InvestorMonthlyProfitDetail::where('profit_month', '2026-07-01')->count())->toBe(3);
+  1109→
+  1110→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  1111→   FAILED  Tests\Feature\ProfitCalculatorTest > it is NOT triggered when saving as draft
+  1112→  Expected response status code [201, 301, 302, 303, 307, 308] but received 419.
+  1113→Failed asserting that false is true.
+  1114→
+  1115→  at tests/Feature/ProfitCalculatorTest.php:231
+  1116→    227▕             ],
+  1117→    228▕             'finalize' => false,
+  1118→    229▕         ]);
+  1119→    230▕
+  1120→  ➜ 231▕     $response->assertRedirect();
+  1121→    232▕
+  1122→    233▕     // Verify NO investor details were created (calculation NOT triggered)
+  1123→    234▕     expect(InvestorMonthlyProfitDetail::where('profit_month', '2026-07-01')->count())->toBe(0);
+  1124→    235▕     expect(MonthlyProfitSummary::where('profit_month', '2026-07-01')->exists())->toBeFalse();
+  1125→
+  1126→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  1127→   FAILED  Tests\Feature\RetainedEarningsTest > it is triggered automatically when sector profits are finalized via controller
+  1128→  Expected response status code [201, 301, 302, 303, 307, 308] but received 419.
+  1129→Failed asserting that false is true.
+  1130→
+  1131→  at tests/Feature/RetainedEarningsTest.php:191
+  1132→    187▕             ],
+  1133→    188▕             'finalize' => true,
+  1134→    189▕         ]);
+  1135→    190▕
+  1136→  ➜ 191▕     $response->assertRedirect();
+  1137→    192▕
+  1138→    193▕     // Verify retained earnings were created automatically
+  1139→    194▕     expect(RetainedEarnings::where('profit_month', '2026-08-01')->exists())->toBeTrue();
+  1140→    195▕     expect(RetainedEarningsDistribution::where('profit_month', '2026-08-01')->count())->toBe(3);
+  1141→
+  1142→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  1143→   FAILED  Tests\Feature\SectorLedgerTest > it includes profit adjustments for the sector                                                                   QueryException
+  1144→  SQLSTATE[22P02]: Invalid text representation: 7 ERROR:  invalid input syntax for type uuid: "test"
+  1145→CONTEXT:  unnamed portal parameter $7 = '...' (Connection: pgsql, Host: postgres, Port: 5432, Database: mudaraba, SQL: insert into "profit_adjustments" ("type", "target_type", "sector_id", "amount", "transaction_date", "profit_month", "batch_uuid", "created_by", "updated_at", "created_at") values (fund_a, sector, 205, 5000, 2026-07-20 00:00:00, 2026-07-01 00:00:00, test, 312, 2026-09-08 15:32:57, 2026-09-08 15:32:57) returning "id")
+  1146→
+  1147→  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:440
+  1148→    436▕             );
+  1149→    437▕
+  1150→    438▕             $this->bindValues($statement, $this->prepareBindings($bindings));
+  1151→    439▕
+  1152→  ➜ 440▕             $statement->execute();
+  1153→    441▕
+  1154→    442▕             return $statement->fetchAll(...$fetchUsing);
+  1155→    443▕         });
+  1156→    444▕     }
+  1157→
+  1158→      +17 vendor frames
+  1159→  18  tests/Feature/SectorLedgerTest.php:100
+  1160→
+  1161→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  1162→   FAILED  Tests\Feature\SectorProfitTest > it allows superadmin to save sector profits as draft
+  1163→  Expected response status code [201, 301, 302, 303, 307, 308] but received 419.
+  1164→Failed asserting that false is true.
+  1165→
+  1166→  at tests/Feature/SectorProfitTest.php:77
+  1167→     73▕             ],
+  1168→     74▕             'finalize' => false,
+  1169→     75▕         ]);
+  1170→     76▕
+  1171→  ➜  77▕     $response->assertRedirect();
+  1172→     78▕     $response->assertSessionHas('success');
+  1173→     79▕
+  1174→     80▕     // Verify records were created with 'draft' status
+  1175→     81▕     $entry1 = MonthlySectorProfit::where('sector_id', $this->sector1->id)
+  1176→
+  1177→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  1178→   FAILED  Tests\Feature\SectorProfitTest > it allows superadmin to finalize sector profits
+  1179→  Expected response status code [201, 301, 302, 303, 307, 308] but received 419.
+  1180→Failed asserting that false is true.
+  1181→
+  1182→  at tests/Feature/SectorProfitTest.php:104
+  1183→    100▕             ],
+  1184→    101▕             'finalize' => true,
+  1185→    102▕         ]);
+  1186→    103▕
+  1187→  ➜ 104▕     $response->assertRedirect();
+  1188→    105▕
+  1189→    106▕     $entry = MonthlySectorProfit::where('sector_id', $this->sector1->id)
+  1190→    107▕         ->where('profit_month', '2026-07-01')
+  1191→    108▕         ->first();
+  1192→
+  1193→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  1194→   FAILED  Tests\Feature\SectorProfitTest > it updates existing entries instead of creating duplicates
+  1195→  Failed asserting that 0 is identical to 1.
+  1196→
+  1197→  at tests/Feature/SectorProfitTest.php:139
+  1198→    135▕     // Should have only 1 record, with updated values
+  1199→    136▕     $count = MonthlySectorProfit::where('sector_id', $this->sector1->id)
+  1200→    137▕         ->where('profit_month', '2026-07-01')
+  1201→    138▕         ->count();
+  1202→  ➜ 139▕     expect($count)->toBe(1);
+  1203→    140▕
+  1204→    141▕     $entry = MonthlySectorProfit::where('sector_id', $this->sector1->id)
+  1205→    142▕         ->where('profit_month', '2026-07-01')
+  1206→    143▕         ->first();
+  1207→
+  1208→  1   tests/Feature/SectorProfitTest.php:139
+  1209→
+  1210→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  1211→   FAILED  Tests\Feature\SectorProfitTest > it validates required fields
+  1212→  Session is missing expected key [errors].
+  1213→Failed asserting that false is true.
+  1214→
+  1215→  at tests/Feature/SectorProfitTest.php:169
+  1216→    165▕ it('validates required fields', function () {
+  1217→    166▕     $response = $this->actingAs($this->superadmin)
+  1218→    167▕         ->post('/profit/sector', []);
+  1219→    168▕
+  1220→  ➜ 169▕     $response->assertSessionHasErrors(['profit_month', 'items']);
+  1221→    170▕ });
+  1222→    171▕
+  1223→    172▕ it('redirects unauthenticated users to login', function () {
+  1224→    173▕     $response = $this->get('/profit/sector');
+  1225→
+  1226→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  1227→   FAILED  Tests\Feature\SectorProfitTest > it computes totals correctly
+  1228→  Property [totals.estimated] was marked as invalid using a closure.
+  1229→Failed asserting that false is true.
+  1230→
+  1231→  at tests/Feature/SectorProfitTest.php:213
+  1232→    209▕     $response = $this->actingAs($this->superadmin)
+  1233→    210▕         ->get('/profit/sector?month=2026-07-01');
+  1234→    211▕
+  1235→    212▕     $response->assertInertia(fn ($page) => $page
+  1236→  ➜ 213▕         ->where('totals.estimated', fn ($v) => $v == 900000)  // Z2
+  1237→    214▕         ->where('totals.actual', fn ($v) => $v == 870000)      // X2
+  1238→    215▕         ->where('totals.variance', fn ($v) => $v == 30000)     // Y2 = Z2 - X2
+  1239→    216▕     );
+  1240→    217▕ });
+  1241→
+  1242→      +2 vendor frames
+  1243→  3   tests/Feature/SectorProfitTest.php:212
+  1244→
+  1245→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  1246→   FAILED  Tests\Feature\SectorTest > it allows superadmin to create a sector
+  1247→  Expected response status code [201, 301, 302, 303, 307, 308] but received 419.
+  1248→Failed asserting that false is true.
+  1249→
+  1250→  at tests/Feature/SectorTest.php:51
+  1251→     47▕             'name' => 'New Test Sector',
+  1252→     48▕             'status' => 'active',
+  1253→     49▕         ]);
+  1254→     50▕
+  1255→  ➜  51▕     $response->assertRedirect();
+  1256→     52▕     expect(Sector::where('name', 'New Test Sector')->exists())->toBeTrue();
+  1257→     53▕ });
+  1258→     54▕
+  1259→     55▕ it('validates required fields on create', function () {
+  1260→
+  1261→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  1262→   FAILED  Tests\Feature\SectorTest > it validates required fields on create
+  1263→  Session is missing expected key [errors].
+  1264→Failed asserting that false is true.
+  1265→
+  1266→  at tests/Feature/SectorTest.php:59
+  1267→     55▕ it('validates required fields on create', function () {
+  1268→     56▕     $response = $this->actingAs($this->superadmin)
+  1269→     57▕         ->post('/sectors', []);
+  1270→     58▕
+  1271→  ➜  59▕     $response->assertSessionHasErrors(['name', 'status']);
+  1272→     60▕ });
+  1273→     61▕
+  1274→     62▕ it('allows superadmin to edit a sector', function () {
+  1275→     63▕     $response = $this->actingAs($this->superadmin)
+  1276→
+  1277→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  1278→   FAILED  Tests\Feature\SectorTest > it allows superadmin to edit a sector
+  1279→  Expected response status code [201, 301, 302, 303, 307, 308] but received 419.
+  1280→Failed asserting that false is true.
+  1281→
+  1282→  at tests/Feature/SectorTest.php:69
+  1283→     65▕             'name' => 'Updated Sector Name',
+  1284→     66▕             'status' => 'inactive',
+  1285→     67▕         ]);
+  1286→     68▕
+  1287→  ➜  69▕     $response->assertRedirect();
+  1288→     70▕     expect($this->sector->fresh()->name)->toBe('Updated Sector Name');
+  1289→     71▕     expect($this->sector->fresh()->status)->toBe('inactive');
+  1290→     72▕ });
+  1291→     73▕
+  1292→
+  1293→  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  1294→   FAILED  Tests\Feature\SectorTest > it soft-deletes a sector on destroy
+  1295→  Expected response status code [201, 301, 302, 303, 307, 308] but received 419.
+  1296→Failed asserting that false is true.
+  1297→
+  1298→  at tests/Feature/SectorTest.php:78
+  1299→     74▕ it('soft-deletes a sector on destroy', function () {
+  1300→     75▕     $response = $this->actingAs($this->superadmin)
+  1301→     76▕         ->delete("/sectors/{$this->sector->id}");
+  1302→     77▕
+  1303→  ➜  78▕     $response->assertRedirect('/sectors');
+  1304→     79▕     expect($this->sector->fresh()->deleted_at)->not->toBeNull();
+  1305→     80▕     expect(Sector::withTrashed()->where('id', $this->sector->id)->exists())->toBeTrue();
+  1306→     81▕ });
+  1307→     82▕
+  1308→
+  1309→
+  1310→  Tests:    79 failed, 176 passed (996 assertions)
+  1311→  Duration: 100.54s
+  1312→
+  1313→
+  1314→What's next:
+  1315→    Debug this Compose error with Gordon → docker ai "help me fix this compose error"
+  1316→PS D:\DeveloperHub\mudaraba\laravel\mudaraba-app>
