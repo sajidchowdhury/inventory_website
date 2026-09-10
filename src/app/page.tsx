@@ -4,13 +4,36 @@ import { motion } from 'framer-motion'
 import {
   Wallet, Camera, Smartphone, HeartPulse, Plus,
   ArrowRight, ArrowDown, Quote, Moon, ExternalLink,
-  TrendingUp, FileSpreadsheet, Calculator, Sparkles
+  TrendingUp, FileSpreadsheet, Calculator, Sparkles,
+  MessageCircle, Facebook, Globe, Code2, ChevronRight
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { useRef } from 'react'
+
+const projects = [
+  { name: 'nekirjhuri.com', url: 'https://nekirjhuri.com', desc: 'অনলাইন শপিং ও লাইফস্টাইল প্ল্যাটফর্ম' },
+  { name: 'rizqunbd.com', url: 'https://rizqunbd.com', desc: 'রিজিক আনবিডি — খাদ্য ও জীবনযাত্রা' },
+  { name: 'chowdhurypara.com', url: 'https://chowdhurypara.com', desc: 'চৌধুরীপাড়া সম্প্রদায় পোর্টাল' },
+  { name: 'mohipalchowdhurybari.com', url: 'https://mohipalchowdhurybari.com', desc: 'মহিপাল চৌধুরী বাড়ি — পারিবারিক ওয়েবসাইট' },
+  { name: 'cakedesk.bd', url: 'https://cakedesk.bd', desc: 'কেক ডেস্ক — অর্ডার ম্যানেজমেন্ট সিস্টেম' },
+  { name: 'remotecenter.com.bd', url: 'https://remotecenter.com.bd', desc: 'রিমোট সেন্টার — রিমোট সার্ভিস হাব' },
+]
 
 export default function Home() {
+  const showcaseRef = useRef<HTMLDivElement>(null)
+
+  const scrollShowcase = (dir: 'left' | 'right') => {
+    if (showcaseRef.current) {
+      const scrollAmount = 320
+      showcaseRef.current.scrollBy({
+        left: dir === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      })
+    }
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-white">
       {/* ===== Hero Section ===== */}
@@ -67,14 +90,23 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <a href="#products">
                 <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 text-white px-8">
-                  আমাদের পণ্যসমূহ দেখুন
+                  <span style={{ fontFamily: 'var(--font-bn), sans-serif' }}>আমাদের পণ্যসমূহ দেখুন</span>
                   <ArrowRight className="ml-2 size-4" />
                 </Button>
               </a>
-              <a href="#vision">
+              <a href="#showcase">
                 <Button size="lg" variant="outline" className="px-8 border-gray-300">
-                  আমাদের লক্ষ্য
+                  <span style={{ fontFamily: 'var(--font-bn), sans-serif' }}>আমাদের কাজ দেখুন</span>
                 </Button>
+              </a>
+            </div>
+
+            {/* Developed by */}
+            <div className="mt-10 flex items-center justify-center gap-2 text-sm text-gray-400">
+              <Code2 className="size-4 text-emerald-500" />
+              <span style={{ fontFamily: 'var(--font-bn), sans-serif' }}>ডিজাইন ও ডেভেলপমেন্ট:</span>
+              <a href="https://mycreativecode.com" target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:text-emerald-700 font-medium">
+                My Creative Code
               </a>
             </div>
           </motion.div>
@@ -102,20 +134,32 @@ export default function Home() {
             <Quote className="size-12 text-emerald-200 mx-auto mb-6" />
 
             <p
-              className="text-2xl sm:text-3xl text-gray-800 leading-relaxed font-medium"
+              className="text-2xl sm:text-3xl text-gray-800 leading-relaxed font-medium mb-6"
               style={{ fontFamily: 'var(--font-bn), sans-serif' }}
             >
-              আমাদের লক্ষ্য — ব্যবসায়ীদের সাহায্য করা এমন একটি সিস্টেম তৈরিতে,
-              যা তাদের জীবনকে করে তুলবে ঝঞ্ঝাটমুক্ত। আর এই ঝঞ্ঝাটমুক্ত জীবন
-              তাদের অনুপ্রেরণা দেবে আল্লাহর দিকে দৌড়াতে।
+              আল্লাহ তায়ালা বলেছেন: পুরুষদের জন্য রয়েছে তাদের উপার্জনের অংশ,
+              এবং নারীদের জন্যও রয়েছে তাদের উপার্জনের অংশ।
+              সুতরাং উপার্জন করো আল্লাহর অনুগ্রহে, আর সিস্টেম করো সৎ ব্যবসার।
             </p>
 
             <p
-              className="text-sm text-gray-400 mt-6 tracking-wider uppercase"
+              className="text-base text-gray-500 leading-relaxed max-w-2xl mx-auto mb-8"
               style={{ fontFamily: 'var(--font-bn), sans-serif' }}
             >
-              — InventoryOS মিশন
+              আমরা বিশ্বাস করি — একজন ভালো ব্যবসায়ী সে-ই, যে তার ব্যবসাকে গোছানো রাখে।
+              হিসাব ঠিক রাখে, লেনদেন স্বচ্ছ রাখে, এবং দিন শেষে আল্লাহর সামনে দাঁড়াতে পারে
+              বিনয়ের সাথে। InventoryOS সেই গোছানো ব্যবসার স্বপ্ন বাস্তবে রূপ দেয়।
             </p>
+
+            <div className="inline-block px-8 py-4 rounded-2xl bg-emerald-50 border border-emerald-100">
+              <p className="text-2xl text-emerald-700 mb-2" dir="rtl">
+                رَبِّ اشْرَحْ لِي صَدْرِي وَيَسِّرْ لِي أَمْرِي
+              </p>
+              <p className="text-sm text-gray-500" style={{ fontFamily: 'var(--font-bn), sans-serif' }}>
+                হে আমার রব, আমার বক্ষকে প্রশস্ত করুন এবং আমার কাজ সহজ করে দিন।
+              </p>
+              <p className="text-xs text-gray-400 mt-1">(সূরা ত্বোয়া-হা: ২৫-২৬)</p>
+            </div>
           </motion.div>
         </div>
       </section>
@@ -239,7 +283,7 @@ export default function Home() {
                         <product.icon className={`size-6 text-${product.color}-600`} />
                       </div>
                       <Badge variant="outline" className="text-xs text-gray-400 border-gray-200">
-                        শীঘ্রই আসছে
+                        <span style={{ fontFamily: 'var(--font-bn), sans-serif' }}>শীঘ্রই আসছে</span>
                       </Badge>
                     </div>
                     <h3
@@ -262,6 +306,126 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ===== Project Showcase Section ===== */}
+      <section id="showcase" className="py-24 px-6 bg-white">
+        <div className="max-w-6xl mx-auto">
+          {/* Section header */}
+          <motion.div
+            className="text-center mb-12"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            <h2
+              className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4"
+              style={{ fontFamily: 'var(--font-bn), sans-serif' }}
+            >
+              আমাদের কাজ
+            </h2>
+            <div className="w-16 h-1 bg-emerald-500 rounded-full mx-auto mb-4" />
+            <p
+              className="text-gray-500 max-w-xl mx-auto"
+              style={{ fontFamily: 'var(--font-bn), sans-serif' }}
+            >
+              যেসব প্রজেক্ট আমরা ডিজাইন ও ডেভেলপ করেছি
+            </p>
+          </motion.div>
+
+          {/* Scrollable horizontal showcase */}
+          <div className="relative">
+            {/* Scroll buttons (desktop) */}
+            <div className="hidden sm:flex items-center justify-between absolute top-1/2 -left-6 z-10">
+              <button
+                onClick={() => scrollShowcase('left')}
+                className="size-10 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center hover:bg-emerald-50 hover:border-emerald-300 transition-colors"
+              >
+                <ChevronRight className="size-5 text-gray-600 rotate-180" />
+              </button>
+            </div>
+            <div className="hidden sm:flex items-center justify-between absolute top-1/2 -right-6 z-10">
+              <button
+                onClick={() => scrollShowcase('right')}
+                className="size-10 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center hover:bg-emerald-50 hover:border-emerald-300 transition-colors"
+              >
+                <ChevronRight className="size-5 text-gray-600" />
+              </button>
+            </div>
+
+            {/* Scrollable container */}
+            <div
+              ref={showcaseRef}
+              className="flex gap-6 overflow-x-auto pb-6 scroll-smooth snap-x"
+              style={{ scrollbarWidth: 'thin', scrollbarColor: '#10B981 #f3f4f6' }}
+            >
+              {projects.map((project, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4, delay: i * 0.05 }}
+                  className="snap-start shrink-0 w-72"
+                >
+                  <a href={project.url} target="_blank" rel="noopener noreferrer">
+                    <Card className="border border-gray-200 hover:border-emerald-300 hover:shadow-lg transition-all duration-300 group h-full">
+                      <CardContent className="p-6">
+                        {/* Domain icon */}
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="size-12 rounded-xl bg-emerald-50 flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
+                            <Globe className="size-6 text-emerald-600" />
+                          </div>
+                          <ExternalLink className="size-4 text-gray-300 group-hover:text-emerald-500 transition-colors" />
+                        </div>
+                        <h3 className="text-base font-bold text-gray-900 mb-2 group-hover:text-emerald-600 transition-colors">
+                          {project.name}
+                        </h3>
+                        <p
+                          className="text-sm text-gray-500 leading-relaxed"
+                          style={{ fontFamily: 'var(--font-bn), sans-serif' }}
+                        >
+                          {project.desc}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </a>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
+          {/* Contact CTA */}
+          <motion.div
+            className="mt-12 text-center"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            <p
+              className="text-lg text-gray-700 mb-6"
+              style={{ fontFamily: 'var(--font-bn), sans-serif' }}
+            >
+              আপনার ব্যবসার জন্য সিস্টেম তৈরি করতে চান?
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <a href="https://wa.me/8801787492561" target="_blank" rel="noopener noreferrer">
+                <Button className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                  <MessageCircle className="mr-2 size-4" />
+                  WhatsApp: 01787492561
+                </Button>
+              </a>
+              <a href="https://www.facebook.com/mycreativecode" target="_blank" rel="noopener noreferrer">
+                <Button variant="outline" className="border-gray-300">
+                  <Facebook className="mr-2 size-4 text-blue-600" />
+                  <span style={{ fontFamily: 'var(--font-bn), sans-serif' }}>ফেসবুক পেজ</span>
+                </Button>
+              </a>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       {/* ===== Vision / Dua Section ===== */}
       <section id="vision" className="py-24 px-6 bg-gradient-to-b from-white to-emerald-50/30">
         <div className="max-w-3xl mx-auto text-center">
@@ -278,26 +442,34 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Bengali quote */}
+            {/* Bengali text */}
             <p
-              className="text-xl sm:text-2xl text-gray-700 leading-relaxed mb-8 font-medium"
+              className="text-xl sm:text-2xl text-gray-700 leading-relaxed mb-6 font-medium"
               style={{ fontFamily: 'var(--font-bn), sans-serif' }}
             >
-              আমরা বিশ্বাস করি — সৎ ব্যবসা ইবাদতের অংশ।
-              <br />
-              আমাদের সিস্টেম শুধু সফটওয়্যার নয়, এটি একটি উদ্যোগ —
-              <br />
-              মানুষকে আল্লাহর দিকে দৌড়াতে অনুপ্রেরণা দেওয়া।
+              একজন ভালো ব্যবসায়ী সে-ই, যে আল্লাহর দেওয়া রিজিকের অনুসন্ধান করে
+              সৎ পথে, তার হিসাব রাখে গোছানো, এবং কাজ শেষে বলে —
+              আলহামদুলিল্লাহ।
+            </p>
+
+            <p
+              className="text-base text-gray-500 leading-relaxed max-w-2xl mx-auto mb-8"
+              style={{ fontFamily: 'var(--font-bn), sans-serif' }}
+            >
+              সুশৃঙ্খল ব্যবসা শুধু লাভ বাড়ায় না — এটি অন্তরে শান্তি আনে।
+              আর সেই শান্তিই পথ দেখায় আল্লাহর দিকে ফিরে আসার।
+              InventoryOS সেই সুশৃঙ্খল ব্যবসার পথে হাঁটার সহযোগী।
             </p>
 
             {/* Quranic reference */}
             <div className="inline-block px-8 py-4 rounded-2xl bg-emerald-50 border border-emerald-100">
-              <p className="text-2xl text-emerald-700 font-arabic mb-2" dir="rtl">
-                وَقُل رَّبِّ زِدْنِي عِلْمًا
+              <p className="text-2xl text-emerald-700 mb-2" dir="rtl">
+                رَبِّ اشْرَحْ لِي صَدْرِي وَيَسِّرْ لِي أَمْرِي
               </p>
-              <p className="text-xs text-gray-400">
-                (সূরা ত্বোয়া-হা: ১১৪)
+              <p className="text-sm text-gray-500" style={{ fontFamily: 'var(--font-bn), sans-serif' }}>
+                হে আমার রব, আমার বক্ষকে প্রশস্ত করুন এবং আমার কাজ সহজ করে দিন।
               </p>
+              <p className="text-xs text-gray-400 mt-1">(সূরা ত্বোয়া-হা: ২৫-২৬)</p>
             </div>
           </motion.div>
         </div>
@@ -309,50 +481,42 @@ export default function Home() {
         <div className="h-1 bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-400" />
 
         <div className="max-w-6xl mx-auto px-6 py-12">
-          <div className="grid sm:grid-cols-3 gap-8">
-            {/* Column 1: Projects */}
+          <div className="grid sm:grid-cols-4 gap-8">
+            {/* Column 1: Brand */}
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <Code2 className="size-5 text-emerald-600" />
+                <h4 className="text-sm font-semibold text-gray-900">InventoryOS</h4>
+              </div>
+              <p className="text-sm text-gray-500" style={{ fontFamily: 'var(--font-bn), sans-serif' }}>
+                আপনার ব্যবসার জন্য সম্পূর্ণ ডিজিটাল সলিউশন
+              </p>
+            </div>
+
+            {/* Column 2: Products */}
             <div>
               <h4
                 className="text-sm font-semibold text-gray-900 mb-4"
                 style={{ fontFamily: 'var(--font-bn), sans-serif' }}
               >
-                আমাদের প্রজেক্ট
+                আমাদের পণ্য
               </h4>
               <ul className="space-y-2">
                 <li>
-                  <a
-                    href="https://nekirjhuri.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-gray-500 hover:text-emerald-600 transition-colors inline-flex items-center gap-1"
-                  >
-                    nekirjhuri.com
-                    <ExternalLink className="size-3" />
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="http://rizqunbd.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-gray-500 hover:text-emerald-600 transition-colors inline-flex items-center gap-1"
-                  >
-                    rizqunbd.com
-                    <ExternalLink className="size-3" />
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="/mudaraba/login"
-                    className="text-sm text-gray-500 hover:text-emerald-600 transition-colors"
-                  >
+                  <a href="/mudaraba/login" className="text-sm text-gray-500 hover:text-emerald-600 transition-colors">
                     Mudaraba System
                   </a>
+                </li>
+                <li className="text-sm text-gray-400">
+                  <span style={{ fontFamily: 'var(--font-bn), sans-serif' }}>CCTV ম্যানেজমেন্ট (শীঘ্রই)</span>
+                </li>
+                <li className="text-sm text-gray-400">
+                  <span style={{ fontFamily: 'var(--font-bn), sans-serif' }}>ফার্মেসি (শীঘ্রই)</span>
                 </li>
               </ul>
             </div>
 
-            {/* Column 2: Contact */}
+            {/* Column 3: Contact */}
             <div>
               <h4
                 className="text-sm font-semibold text-gray-900 mb-4"
@@ -360,26 +524,46 @@ export default function Home() {
               >
                 যোগাযোগ
               </h4>
-              <ul className="space-y-2 text-sm text-gray-500">
-                <li>inventoryos.xyz</li>
-                <li>contact@inventoryos.xyz</li>
+              <ul className="space-y-3">
+                <li>
+                  <a href="https://wa.me/8801787492561" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-500 hover:text-emerald-600 transition-colors inline-flex items-center gap-1.5">
+                    <MessageCircle className="size-3.5" />
+                    WhatsApp: 01787492561
+                  </a>
+                </li>
+                <li>
+                  <a href="https://www.facebook.com/mycreativecode" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-500 hover:text-emerald-600 transition-colors inline-flex items-center gap-1.5">
+                    <Facebook className="size-3.5 text-blue-600" />
+                    <span style={{ fontFamily: 'var(--font-bn), sans-serif' }}>ফেসবুক পেজ</span>
+                  </a>
+                </li>
               </ul>
             </div>
 
-            {/* Column 3: Brand */}
+            {/* Column 4: Developed by */}
             <div>
-              <h4 className="text-sm font-semibold text-gray-900 mb-4">InventoryOS</h4>
-              <p className="text-sm text-gray-500" style={{ fontFamily: 'var(--font-bn), sans-serif' }}>
-                © 2026 InventoryOS
-                <br />
-                সব অধিকার সংরক্ষিত
-              </p>
+              <h4
+                className="text-sm font-semibold text-gray-900 mb-4"
+                style={{ fontFamily: 'var(--font-bn), sans-serif' }}
+              >
+                ডেভেলপড বাই
+              </h4>
+              <a href="https://mycreativecode.com" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 group">
+                <Code2 className="size-4 text-emerald-600 group-hover:scale-110 transition-transform" />
+                <span className="text-sm font-medium text-gray-700 group-hover:text-emerald-600 transition-colors">
+                  My Creative Code
+                </span>
+                <ExternalLink className="size-3 text-gray-300 group-hover:text-emerald-500 transition-colors" />
+              </a>
             </div>
           </div>
 
-          {/* Bismillah at bottom */}
-          <div className="mt-12 pt-8 border-t border-gray-50 text-center">
-            <p className="text-lg text-emerald-600 font-arabic" dir="rtl">
+          {/* Copyright + Bismillah */}
+          <div className="mt-12 pt-8 border-t border-gray-50 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p className="text-xs text-gray-400" style={{ fontFamily: 'var(--font-bn), sans-serif' }}>
+              © 2026 InventoryOS · সব অধিকার সংরক্ষিত
+            </p>
+            <p className="text-base text-emerald-600" dir="rtl">
               بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
             </p>
           </div>
