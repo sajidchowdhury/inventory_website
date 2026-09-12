@@ -5,7 +5,8 @@ import {
   Wallet, Camera, Smartphone, HeartPulse, Plus,
   ArrowRight, ArrowDown, Quote, Moon, ExternalLink,
   TrendingUp, FileSpreadsheet, Calculator, Sparkles,
-  MessageCircle, Facebook, Globe, Code2, ChevronRight
+  MessageCircle, Facebook, Globe, Code2, ChevronRight,
+  LineChart, Package, Ship, Plane
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -252,6 +253,81 @@ export default function Home() {
 
                   <a href="/mudaraba/login">
                     <Button className="bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto">
+                      <span style={{ fontFamily: 'var(--font-bn), sans-serif' }}>লগইন করুন</span>
+                      <ArrowRight className="ml-2 size-4" />
+                    </Button>
+                  </a>
+                </div>
+              </div>
+            </Card>
+          </motion.div>
+
+          {/* CreativeCast — featured product */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="mb-8"
+          >
+            <Card className="overflow-hidden border-2 border-blue-100 hover:border-blue-300 transition-all duration-300 hover:shadow-xl group">
+              <div className="grid md:grid-cols-2 gap-0">
+                {/* Left: Icon + visual */}
+                <div className="relative bg-gradient-to-br from-blue-50 to-indigo-100/50 p-12 flex items-center justify-center min-h-[280px]">
+                  <div className="absolute inset-0 opacity-10">
+                    <svg viewBox="0 0 200 200" fill="none" className="w-full h-full">
+                      <path d="M20 150 Q60 130 80 100 T140 60 T180 40" stroke="#3B82F6" strokeWidth="2" fill="none" />
+                      <path d="M20 160 Q60 140 80 110 T140 70 T180 50" stroke="#3B82F6" strokeWidth="1" strokeDasharray="4 4" fill="none" />
+                      <circle cx="60" cy="125" r="3" fill="#3B82F6" />
+                      <circle cx="100" cy="90" r="3" fill="#3B82F6" />
+                      <circle cx="140" cy="65" r="3" fill="#3B82F6" />
+                      <circle cx="180" cy="45" r="4" fill="#3B82F6" />
+                    </svg>
+                  </div>
+                  <div className="relative z-10 text-center">
+                    <div className="size-20 rounded-2xl bg-blue-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-200">
+                      <LineChart className="size-10 text-white" />
+                    </div>
+                    <Badge className="bg-blue-100 text-blue-700 border-blue-200">
+                      চালু আছে
+                    </Badge>
+                  </div>
+                </div>
+
+                {/* Right: Content */}
+                <div className="p-8 md:p-12 flex flex-col justify-center">
+                  <h3
+                    className="text-2xl font-bold text-gray-900 mb-3"
+                    style={{ fontFamily: 'var(--font-bn), sans-serif' }}
+                  >
+                    CreativeCast
+                  </h3>
+                  <p
+                    className="text-gray-500 leading-relaxed mb-6"
+                    style={{ fontFamily: 'var(--font-bn), sans-serif' }}
+                  >
+                    এআই-চালিত চাহিদা পূর্বাভাস ও অর্ডার প্ল্যানিং সিস্টেম। এক্সেল আপলোড,
+                    উৎসব-ভিত্তিক ফোরকাস্ট (ঈদ, পূজা, শীত), EOQ + সেফটি স্টক, আকাশ vs
+                    সমুদ্র ফ্রেট সিদ্ধান্ত, ও ল্যান্ডেড কস্ট বিশ্লেষণ — সব এক ড্যাশবোর্ডে।
+                  </p>
+
+                  {/* Features grid */}
+                  <div className="grid grid-cols-2 gap-3 mb-6">
+                    {[
+                      { icon: TrendingUp, text: 'উৎসব-ভিত্তিক ফোরকাস্ট' },
+                      { icon: Calculator, text: 'EOQ + সেফটি স্টক' },
+                      { icon: Ship, text: 'আকাশ vs সমুদ্র ফ্রেট' },
+                      { icon: Package, text: 'কাস্টম ইভেন্ট ও সেটিংস' },
+                    ].map((feature, i) => (
+                      <div key={i} className="flex items-center gap-2 text-sm text-gray-600">
+                        <feature.icon className="size-4 text-blue-500 shrink-0" />
+                        <span style={{ fontFamily: 'var(--font-bn), sans-serif' }}>{feature.text}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <a href="https://inventoryos.xyz/creativecast" target="_blank" rel="noopener noreferrer">
+                    <Button className="bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto">
                       <span style={{ fontFamily: 'var(--font-bn), sans-serif' }}>লগইন করুন</span>
                       <ArrowRight className="ml-2 size-4" />
                     </Button>
