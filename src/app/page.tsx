@@ -306,18 +306,18 @@ export default function Home() {
                     className="text-gray-500 leading-relaxed mb-6"
                     style={{ fontFamily: 'var(--font-bn), sans-serif' }}
                   >
-                    এআই-চালিত চাহিদা পূর্বাভাস ও অর্ডার প্ল্যানিং সিস্টেম। এক্সেল আপলোড,
-                    উৎসব-ভিত্তিক ফোরকাস্ট (ঈদ, পূজা, শীত), EOQ + সেফটি স্টক, আকাশ vs
-                    সমুদ্র ফ্রেট সিদ্ধান্ত, ও ল্যান্ডেড কস্ট বিশ্লেষণ — সব এক ড্যাশবোর্ডে।
+                    এআই-চালিত চাহিদা forecast ও অর্ডার প্ল্যানিং সিস্টেম। এক্সেল আপলোড করলেই
+                    উৎসব অনুযায়ী forecast (ঈদ, পূজা, শীত), কত অর্ডার করবেন, কখন অর্ডার করবেন,
+                    Air vs সমুদ্র ফ্রেট সিদ্ধান্ত, আর ল্যান্ডেড কস্ট — সব এক ড্যাশবোর্ডে।
                   </p>
 
                   {/* Features grid */}
                   <div className="grid grid-cols-2 gap-3 mb-6">
                     {[
-                      { icon: TrendingUp, text: 'উৎসব-ভিত্তিক ফোরকাস্ট' },
-                      { icon: Calculator, text: 'EOQ + সেফটি স্টক' },
-                      { icon: Ship, text: 'আকাশ vs সমুদ্র ফ্রেট' },
-                      { icon: Package, text: 'কাস্টম ইভেন্ট ও সেটিংস' },
+                      { icon: TrendingUp, text: 'উৎসব অনুযায়ী forecast' },
+                      { icon: Calculator, text: 'কত অর্ডার করবেন + স্টক' },
+                      { icon: Ship, text: 'Air vs সমুদ্র ফ্রেট' },
+                      { icon: Package, text: 'নিজের ইভেন্ট ও সেটিংস' },
                     ].map((feature, i) => (
                       <div key={i} className="flex items-center gap-2 text-sm text-gray-600">
                         <feature.icon className="size-4 text-blue-500 shrink-0" />
