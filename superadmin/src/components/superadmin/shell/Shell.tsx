@@ -10,6 +10,8 @@ import { ServerHealthView } from "@/components/superadmin/views/ServerHealthView
 import { AuditLogView } from "@/components/superadmin/views/AuditLogView"
 import { AddProjectView } from "@/components/superadmin/views/AddProjectView"
 import { SecurityView } from "@/components/superadmin/views/SecurityView"
+import { AutomatedPaymentsView } from "@/components/superadmin/views/AutomatedPaymentsView"
+import { SsoView } from "@/components/superadmin/views/SsoView"
 import { SiteView } from "@/components/superadmin/views/SiteView"
 import { ProjectView } from "@/components/superadmin/views/project/ProjectView"
 import { LoginView } from "@/components/superadmin/views/LoginView"
@@ -31,6 +33,8 @@ export const VIEWS: Partial<Record<ViewKey, () => React.ReactElement>> = {
   "audit-log": AuditLogView,
   "add-project": AddProjectView,
   security: SecurityView,
+  "automated-payments": AutomatedPaymentsView,
+  sso: SsoView,
   project: ProjectView,
   site: SiteView,
 }

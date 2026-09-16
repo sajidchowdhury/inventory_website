@@ -2,13 +2,13 @@
 import {
   Wallet, GraduationCap, Camera, LineChart, Code2, Globe, Package,
   LayoutDashboard, Users, Receipt, TrendingUp, Bell, Server, ScrollText,
-  FolderPlus, ShieldCheck, type LucideIcon,
+  FolderPlus, ShieldCheck, CreditCard, Fingerprint, type LucideIcon,
 } from "lucide-react"
 
 export const ICONS: Record<string, LucideIcon> = {
   Wallet, GraduationCap, Camera, LineChart, Code2, Globe, Package,
   LayoutDashboard, Users, Receipt, TrendingUp, Bell, Server, ScrollText,
-  FolderPlus, ShieldCheck,
+  FolderPlus, ShieldCheck, CreditCard, Fingerprint,
 }
 
 export const NAV_ICONS: Record<string, LucideIcon> = {
@@ -21,6 +21,8 @@ export const NAV_ICONS: Record<string, LucideIcon> = {
   "audit-log": ScrollText,
   "add-project": FolderPlus,
   security: ShieldCheck,
+  "automated-payments": CreditCard,
+  sso: Fingerprint,
   site: Globe,
 }
 

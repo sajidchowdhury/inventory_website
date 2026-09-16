@@ -4,7 +4,6 @@
 import { NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { getCurrentAdmin } from "@/lib/auth"
-import { flipAppUserPaid } from "@/lib/cross-db"
 import { writeAudit } from "@/server/audit"
 
 export const runtime = "nodejs"
@@ -62,54 +61,9 @@ export async function PATCH(req: Request) {
     }
 
     if (action === "approve") {
-      // 1. flip the app's user paid flag (Phase 2: writes the real .db via node:sqlite
-      // + schema map; falls back to MockAppUser mirror for unwired apps). Non-fatal —
-      // a user missing from an app's DB must not block the Subscription.
-      try {
-        await flipAppUserPaid(request.projectId, request.clientEmail, true)
-      } catch (e: any) {
-        console.warn("flipAppUserPaid failed (non-fatal):", e?.message)
-      }
-      // 2. upsert Client
-      const client = await db.client.upsert({
-        where: { projectId_email: { projectId: request.projectId, email: request.clientEmail } },
-        update: {},
-        create: { projectId: request.projectId, email: request.clientEmail },
-      })
-      // 3. create Subscription (30-day cycle)
-      const cycleStart = new Date()
-      const cycleEnd = new Date(Date.now() + 30 * 86400000)
-      await db.subscription.create({
-        data: {
-          projectId: request.projectId,
-          clientId: client.id,
-          cycleStart,
-          cycleEnd,
-          status: "active",
-          paymentRequestId: request.id,
-        },
-      })
-      // 4. ledger credit
-      await db.ledger.create({
-        data: {
-          projectId: request.projectId,
-          clientId: client.id,
-          type: "credit",
-          amount: request.amount,
-          reason: "monthly subscription",
-          txId: request.txId,
-        },
-      })
-      // 5. mark request approved
-      await db.paymentRequest.update({
-        where: { id: request.id },
-        data: { status: "approved", reviewedAt: new Date(), reviewerId: admin.id, notes: notes || null },
-      })
-      await writeAudit(admin, "payment.approve", request.txId, {
-        project: request.project.key,
-        email: request.clientEmail,
-        amount: request.amount,
-      })
+      const { approvePaymentRequest } = await import("@/server/approve")
+      const res = await approvePaymentRequest(request.id, admin, { source: "manual" })
+      if (!res.ok) return NextResponse.json({ error: res.error }, { status: 409 })
       return NextResponse.json({ ok: true, status: "approved" })
     } else {
       // reject

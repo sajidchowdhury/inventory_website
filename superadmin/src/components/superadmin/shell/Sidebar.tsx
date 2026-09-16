@@ -30,6 +30,8 @@ const NAV: Array<{ key: ViewKey; label: string }> = [
   { key: "audit-log", label: "Audit Log" },
   { key: "add-project", label: "Add Project" },
   { key: "security", label: "Security (2FA)" },
+  { key: "automated-payments", label: "Automated Payments" },
+  { key: "sso", label: "SSO" },
   { key: "site", label: "Preview Root Site" },
 ]
 

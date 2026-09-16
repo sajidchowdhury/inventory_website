@@ -12,6 +12,8 @@ export type ViewKey =
   | "audit-log"
   | "add-project"
   | "security"
+  | "automated-payments"
+  | "sso"
   | "project"
   | "site"
 

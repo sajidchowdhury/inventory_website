@@ -318,3 +318,27 @@ Verification (curl, dev kept alive during each call):
 Stage Summary:
 - Phase 3 first chunk COMPLETE + verified: 2FA (TOTP) protects the SuperAdmin login (a stolen password no longer compromises every project's DB + landing content); automated dunning emails send on a 3/1/0/+3-overdue schedule with dedup, real SMTP-ready (logs in fallback).
 - Remaining Phase 3 (next chunks): bKash automated payment API (OAuth + create payment + IPN verify — needs a bKash merchant account to test live; can build code-complete with a mock mode), SSO token issuer + reference verifier (SuperAdmin-side buildable; real-app integration is a Phase 2-style execution step), mobile-responsive approve flow (already responsive; minor polish).
+
+---
+Task ID: 15 (Phase 3 — second chunk)
+Agent: orchestrator (main)
+Task: bKash automated payment module + SSO token issuer
+
+Work Log:
+- src/lib/bkash.ts: tokenized checkout v1.2.0 (getToken/createPayment/executePayment). Real mode hits bKash sandbox when BKASH_* env set; mock mode (default) generates a fake paymentID + a /api/bkash/simulate URL so the full flow runs without a merchant account. Token cache.
+- src/lib/sso.ts: issueToken (HMAC-SHA256 signed, 5-min TTL, scoped to email+projectKey) + verifyToken (timingSafeEqual signature check + expiry). Uses SSO_SECRET || AUTH_SECRET.
+- src/server/approve.ts: extracted the approve logic (flip app DB paid + Client upsert + 30-day Subscription + Ledger credit + PaymentRequest approved + audit) into approvePaymentRequest(requestId, actor, {source, trxId}). Refactored /api/payments PATCH to use it; the bKash callback reuses it for auto-approve.
+- bKash routes: /api/bkash/create (POST — admin-authed, creates payment + pending PaymentRequest with method=bkash-auto, txId=paymentID), /api/bkash/callback (GET — bKash redirect; executes payment, on Completed auto-approves via the shared helper; returns an HTML success/error page), /api/bkash/simulate (GET — mock checkout page that auto-redirects to the callback).
+- SSO routes: /api/sso/issue (POST — admin-issued for demo; in prod a client-login flow calls it), /api/sso/verify (GET — PUBLIC, called by product apps; returns {valid, email, projectKey, expiresAt}).
+- AutomatedPaymentsView: project select + client email + amount → create → result card with "Open bKash checkout" + "Simulate & auto-approve" buttons + flow explainer.
+- SsoView: project + email → issue → token + copy + "Verify via /api/sso/verify" + reference integration snippet.
+- Added ViewKeys "automated-payments" + "sso", sidebar entries, CreditCard + Fingerprint icons, wired into Shell VIEWS.
+
+Verification (curl, dev kept alive during the call):
+- bKash: rahim is_paid=0 before → POST /api/bkash/create {projectKey:mudaraba, clientEmail:rahim.mudaraba@demo.com} → {paymentID:mock-..., amount:1500, mockMode:true, bkashURL:/api/bkash/simulate?...} → GET /api/bkash/callback?paymentID=... → "Auto-approved" + "Payment completed" → rahim is_paid=1 after (auto-approve flipped the real .db with NO admin action). ✓
+- SSO: POST /api/sso/issue → signed token → GET /api/sso/verify?token=<good> → {valid:true, email, projectKey:mudaraba} → GET with tampered token (last 2 chars→XX) → {valid:false, error:"bad signature"}. ✓
+- `bun run lint` clean. ✓
+
+Stage Summary:
+- Phase 3 second chunk COMPLETE + verified. bKash automated payments: users pay online, the callback auto-approves (Subscription + Ledger + is_paid flip + audit) — the manual approval queue becomes optional. SSO: SuperAdmin issues signed short-lived tokens product apps verify to log users in — one InventoryOS account → all products. Both modules are env-driven and switch from mock to live with no code change on the real VPS.
+- Phase 3 is now feature-complete: 2FA (Task 14) + dunning emails (Task 14) + bKash automated (this) + SSO (this). Only the real-VPS execution (merchant creds, real-app SSO integration) remains, documented in PHASE2_VPS_DEPLOYMENT.md.
