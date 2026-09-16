@@ -1,0 +1,172 @@
+// InventoryOS SuperAdmin — Prisma schema
+// Source of truth for: projects, payment config, landing content, clients,
+// pending payments, subscriptions, ledgers, admin users, audit log, reminders.
+// See SUPERADMIN_IMPLEMENTATION_PLAN.md §5.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Project {
+  id         String   @id @default(cuid())
+  key        String   @unique // "root", "mudaraba", "cctv", ...
+  name       String
+  folderPath String?
+  appPort    Int?
+  dbType     String   @default("sqlite")
+  dbPath     String?
+  schemaMap  String   @default("{}") // JSON: usersTable, emailColumn, paidColumn, ...
+  landingUrl String?
+  isRoot     Boolean  @default(false)
+  active     Boolean  @default(true)
+  icon       String   @default("Package") // lucide icon name
+  color      String   @default("emerald") // tailwind color stem
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  paymentConfig ProjectPaymentConfig?
+  landing       LandingContent?
+  payments      PaymentRequest[]
+  subscriptions Subscription[]
+  clients       Client[]
+  ledger        Ledger[]
+}
+
+model ProjectPaymentConfig {
+  projectId     String  @id
+  project       Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  bkashNumber   String?
+  nagadNumber   String?
+  bankAccount   String?
+  monthlyAmount Float
+  currency      String  @default("BDT")
+  dueDayOfMonth Int     @default(1)
+  updatedAt     DateTime @updatedAt
+}
+
+model LandingContent {
+  projectId String   @id
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  content   String   @default("{}") // JSON: hero, mission, vision, footer, ...
+  updatedAt DateTime @updatedAt
+}
+
+model Client {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  email     String
+  name      String?
+  phone     String?
+  createdAt DateTime @default(now())
+  subscriptions Subscription[]
+  ledger        Ledger[]
+  @@unique([projectId, email])
+  @@index([projectId])
+}
+
+model PaymentRequest {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  clientEmail String
+  method      String // bkash | nagad | bank
+  txId        String
+  amount      Float
+  status      String   @default("pending") // pending | approved | rejected
+  submittedAt DateTime @default(now())
+  reviewedAt  DateTime?
+  reviewerId  String?
+  notes       String?
+  @@index([projectId, status])
+  @@index([status])
+}
+
+model Subscription {
+  id               String   @id @default(cuid())
+  projectId        String
+  project          Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  clientId         String
+  client           Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  cycleStart       DateTime
+  cycleEnd         DateTime
+  status           String   @default("active") // active | expired | pending
+  paymentRequestId String?
+  createdAt        DateTime @default(now())
+  @@index([projectId, status])
+  @@index([clientId])
+  @@index([cycleEnd])
+}
+
+model Ledger {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  clientId  String?
+  client    Client?  @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  type      String // credit | debit
+  amount    Float
+  reason    String
+  txId      String?
+  createdAt DateTime @default(now())
+  @@index([projectId, createdAt])
+  @@index([createdAt])
+}
+
+model AdminUser {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  passwordHash  String
+  name          String?
+  role          String   @default("admin") // admin | superadmin
+  twoFactorSecret String?
+  createdAt     DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  adminId   String?
+  adminEmail String?
+  action    String // payment.approve | payment.reject | project.create | landing.update | ...
+  target    String?
+  meta      String? // JSON
+  createdAt DateTime @default(now())
+  @@index([createdAt])
+}
+
+model ReminderLog {
+  id             String   @id @default(cuid())
+  subscriptionId String
+  channel        String   @default("email") // email | call
+  sentAt         DateTime @default(now())
+  result         String?
+}
+
+model AdminSession {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  adminId   String
+  adminEmail String
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  @@index([token])
+}
+
+// Phase 1 mirror of each product app's real users table.
+// Stands in for /var/www/<app>/db/custom.db until better-sqlite3 is wired in Phase 2.
+model MockAppUser {
+  id        String  @id @default(cuid())
+  projectId String
+  email     String
+  name      String?
+  phone     String?
+  isPaid    Boolean @default(false)
+  createdAt DateTime @default(now())
+  @@unique([projectId, email])
+  @@index([projectId])
+}
