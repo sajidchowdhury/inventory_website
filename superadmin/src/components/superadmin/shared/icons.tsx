@@ -2,13 +2,13 @@
 import {
   Wallet, GraduationCap, Camera, LineChart, Code2, Globe, Package,
   LayoutDashboard, Users, Receipt, TrendingUp, Bell, Server, ScrollText,
-  FolderPlus, type LucideIcon,
+  FolderPlus, ShieldCheck, type LucideIcon,
 } from "lucide-react"
 
 export const ICONS: Record<string, LucideIcon> = {
   Wallet, GraduationCap, Camera, LineChart, Code2, Globe, Package,
   LayoutDashboard, Users, Receipt, TrendingUp, Bell, Server, ScrollText,
-  FolderPlus,
+  FolderPlus, ShieldCheck,
 }
 
 export const NAV_ICONS: Record<string, LucideIcon> = {
@@ -20,6 +20,7 @@ export const NAV_ICONS: Record<string, LucideIcon> = {
   "server-health": Server,
   "audit-log": ScrollText,
   "add-project": FolderPlus,
+  security: ShieldCheck,
   site: Globe,
 }
 

@@ -25,6 +25,17 @@ export async function POST(req: Request) {
     if (!ok) {
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 })
     }
+    // Phase 3 2FA: if the admin has a TOTP secret, issue a short-lived challenge
+    // and require a 6-digit code before creating the session.
+    if (admin.twoFactorSecret) {
+      const challenge = await db.twoFactorChallenge.create({
+        data: {
+          adminId: admin.id,
+          expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+        },
+      })
+      return NextResponse.json({ needs2FA: true, challenge: challenge.id })
+    }
     await createSession(admin.id, admin.email)
     await writeAudit({ id: admin.id, email: admin.email }, "auth.login", admin.email, {
       method: "password",

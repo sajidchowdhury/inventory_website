@@ -11,6 +11,7 @@ export type ViewKey =
   | "server-health"
   | "audit-log"
   | "add-project"
+  | "security"
   | "project"
   | "site"
 

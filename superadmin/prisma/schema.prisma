@@ -143,8 +143,22 @@ model ReminderLog {
   id             String   @id @default(cuid())
   subscriptionId String
   channel        String   @default("email") // email | call
+  tier           String?  // dunning tier: "dunning-3d" | "dunning-1d" | "dunning-0d" | "dunning-overdue3"
   sentAt         DateTime @default(now())
   result         String?
+  @@index([subscriptionId, tier])
+}
+
+// Phase 3: short-lived challenge issued after a correct password when the admin
+// has 2FA enabled. The verify-2fa endpoint consumes it (used=true) on success.
+model TwoFactorChallenge {
+  id        String   @id @default(cuid())
+  adminId   String
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  @@index([adminId])
+  @@index([expiresAt])
 }
 
 model AdminSession {

@@ -294,3 +294,27 @@ Stage Summary:
 - Phase 2 cross-db mechanism is COMPLETE and verified end-to-end in the sandbox: SuperAdmin reads AND writes a real standalone SQLite file (sample-apps/mudaraba.db) via node:sqlite + the per-project schema map, with graceful MockAppUser fallback for unwired apps. The cron jobs (expire/reminders/sync) run. The VPS deployment playbook (PHASE2_VPS_DEPLOYMENT.md) is the user's execution guide for the real inventoryos.xyz.
 - Known sandbox quirk: the dev server dies when a bash tool call returns (the sandbox reaps shell children). Restart with `nohup bun run dev > /dev/null 2>&1 &` inside the call that needs it. On the real VPS this is a non-issue (systemd manages it).
 - Phase 3 (next): bKash automated API, SSO across apps, real SMTP for reminders, 2FA for admins.
+
+---
+Task ID: 14 (Phase 3 — first chunk)
+Agent: orchestrator (main)
+Task: 2FA (TOTP) admin login + automated dunning emails
+
+Work Log:
+- Installed otplib (pinned to ^11 — v12 dropped the `authenticator` singleton the totp.ts API expects), qrcode.react (QR rendering), nodemailer + @types/nodemailer.
+- prisma/schema.prisma: added TwoFactorChallenge model (id, adminId, expiresAt, used) + tier column on ReminderLog. db:push (additive, existing data preserved).
+- src/lib/totp.ts: generateSecret / keyuri (otpauth URI) / generateToken / verifyToken via otplib.authenticator.
+- src/lib/email.ts: sendEmail() — nodemailer SMTP if SMTP_HOST env set, else logs to /tmp/inventoryos-emails.log (so the dunning flow is observable without a mail server). dunningEmail() template (Bangla-first).
+- 2FA API: /api/2fa/setup (POST — gen secret+otpauth URI), /api/2fa/enable (POST {secret, token} — verify then persist), /api/2fa/disable, /api/2fa/status. /api/auth POST now returns {needs2FA, challenge} when the admin has a TOTP secret; /api/auth/verify-2fa POST {challenge, token} consumes the challenge + verifies + creates the session. Challenge TTL 5 min, single-use.
+- SecurityView: status badge (Enabled/Not enabled), enrollment flow (QR via QRCodeSVG + secret + 6-digit verify input), disable button. Wired into the sidebar (ViewKey "security", ShieldCheck icon).
+- LoginView: 2FA step — when /api/auth returns {needs2FA, challenge}, switch to a 6-digit code input; POST verify-2fa; "Back to password" link.
+- Rewrote /api/cron/reminders: tiered dunning schedule (dunning-3d / -1d / -0d / -overdue3) with per-(subscription, tier) dedup via ReminderLog; actually sends emails via sendEmail (logs to file in fallback mode).
+
+Verification (curl, dev kept alive during each call):
+- 2FA full cycle: login (no 2FA → direct) → setup (secret OBFF...) → enable with valid TOTP ({ok:true}) → status ({enabled:true}) → login again ({needs2FA, challenge}) → verify BAD token 000000 → "Invalid 6-digit code" (rejected) → verify GOOD token → "verified: admin@inventoryos.xyz" → disable → login direct again. ✓
+- Dunning: forced a mudaraba sub's cycleEnd to now+3d → ran cron → sent:1, perTier:{dunning-3d:1} → /tmp/inventoryos-emails.log shows the real Bangla dunning email (project, BDT 1500, bKash 01787492561, action) → re-ran cron → sent:0 (dedup per (sub,tier) working). ✓
+- `bun run lint` clean. ✓
+
+Stage Summary:
+- Phase 3 first chunk COMPLETE + verified: 2FA (TOTP) protects the SuperAdmin login (a stolen password no longer compromises every project's DB + landing content); automated dunning emails send on a 3/1/0/+3-overdue schedule with dedup, real SMTP-ready (logs in fallback).
+- Remaining Phase 3 (next chunks): bKash automated payment API (OAuth + create payment + IPN verify — needs a bKash merchant account to test live; can build code-complete with a mock mode), SSO token issuer + reference verifier (SuperAdmin-side buildable; real-app integration is a Phase 2-style execution step), mobile-responsive approve flow (already responsive; minor polish).
