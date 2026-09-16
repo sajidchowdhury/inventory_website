@@ -12,6 +12,7 @@ import { AddProjectView } from "@/components/superadmin/views/AddProjectView"
 import { SecurityView } from "@/components/superadmin/views/SecurityView"
 import { AutomatedPaymentsView } from "@/components/superadmin/views/AutomatedPaymentsView"
 import { SsoView } from "@/components/superadmin/views/SsoView"
+import { SystemSettingsView } from "@/components/superadmin/views/SystemSettingsView"
 import { SiteView } from "@/components/superadmin/views/SiteView"
 import { ProjectView } from "@/components/superadmin/views/project/ProjectView"
 import { LoginView } from "@/components/superadmin/views/LoginView"
@@ -35,6 +36,7 @@ export const VIEWS: Partial<Record<ViewKey, () => React.ReactElement>> = {
   security: SecurityView,
   "automated-payments": AutomatedPaymentsView,
   sso: SsoView,
+  "system-settings": SystemSettingsView,
   project: ProjectView,
   site: SiteView,
 }

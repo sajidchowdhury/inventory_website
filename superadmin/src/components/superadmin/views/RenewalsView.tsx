@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { StatCard, PageHeader, EmptyState } from "@/components/superadmin/shared/Primitives"
+import { ExportButton } from "@/components/superadmin/shared/ExportButton"
 import { getIcon } from "@/components/superadmin/shared/icons"
 import { formatDate, relativeTime } from "@/lib/format"
 import type { LucideIcon } from "lucide-react"
@@ -119,9 +120,12 @@ export function RenewalsView() {
         title="Renewals & Reminders"
         description="Upcoming renewals and overdue clients to chase."
         action={
-          <Button variant="outline" size="sm" onClick={refresh} disabled={loading}>
-            <RefreshCw className="mr-2 size-3.5" /> Refresh
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={refresh} disabled={loading}>
+              <RefreshCw className="mr-2 size-3.5" /> Refresh
+            </Button>
+            <ExportButton url="/api/export/renewals" />
+          </div>
         }
       />
 

@@ -16,6 +16,7 @@ import {
   StatCard,
   EmptyState,
 } from "@/components/superadmin/shared/Primitives"
+import { ExportButton } from "@/components/superadmin/shared/ExportButton"
 import { getIcon } from "@/components/superadmin/shared/icons"
 import { formatNumber, formatDate } from "@/lib/format"
 import {
@@ -141,9 +142,12 @@ export function AllClientsView() {
         title="All Clients"
         description="Every client across every product."
         action={
-          <Button variant="outline" size="sm" onClick={refresh} disabled={loading}>
-            <RefreshCw className="mr-2 size-3.5" /> Refresh
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={refresh} disabled={loading}>
+              <RefreshCw className="mr-2 size-3.5" /> Refresh
+            </Button>
+            <ExportButton url="/api/export/clients" />
+          </div>
         }
       />
 

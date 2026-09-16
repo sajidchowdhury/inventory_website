@@ -32,6 +32,7 @@ const NAV: Array<{ key: ViewKey; label: string }> = [
   { key: "security", label: "Security (2FA)" },
   { key: "automated-payments", label: "Automated Payments" },
   { key: "sso", label: "SSO" },
+  { key: "system-settings", label: "System Settings" },
   { key: "site", label: "Preview Root Site" },
 ]
 

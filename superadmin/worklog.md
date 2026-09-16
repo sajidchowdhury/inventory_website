@@ -342,3 +342,29 @@ Verification (curl, dev kept alive during the call):
 Stage Summary:
 - Phase 3 second chunk COMPLETE + verified. bKash automated payments: users pay online, the callback auto-approves (Subscription + Ledger + is_paid flip + audit) — the manual approval queue becomes optional. SSO: SuperAdmin issues signed short-lived tokens product apps verify to log users in — one InventoryOS account → all products. Both modules are env-driven and switch from mock to live with no code change on the real VPS.
 - Phase 3 is now feature-complete: 2FA (Task 14) + dunning emails (Task 14) + bKash automated (this) + SSO (this). Only the real-VPS execution (merchant creds, real-app SSO integration) remains, documented in PHASE2_VPS_DEPLOYMENT.md.
+
+---
+Task ID: 16 (ops toolkit)
+Agent: orchestrator (main)
+Task: CSV exports (clients/ledger/renewals) + System Settings view
+
+Work Log:
+- src/lib/csv.ts: rowsToCsv (RFC 4180 escaping — wraps fields with commas/quotes/newlines in double quotes).
+- 3 export routes (admin-authed, text/csv + Content-Disposition attachment):
+  - /api/export/clients → all clients cross-project with project + status + cycleEnd + joined (for the "call overdue clients" workflow).
+  - /api/export/ledger → ledger entries with signed amounts, optional ?projectId= filter (for accounting).
+  - /api/export/renewals → overdue + upcoming (≤7 days) with phone + days (the dunning call list).
+- /api/system/status → {bkash:{mode,configured,needs}, smtp:{configured,host,from}, sso:{configured}, cron:{secret}, counts:{admins,projects,clients,twoFactorEnabled,pendingPayments}}.
+- src/components/superadmin/shared/ExportButton.tsx — authed fetch→blob→download with the filename from Content-Disposition.
+- src/components/superadmin/views/SystemSettingsView.tsx — stat cards (admins/projects/clients/pending/2FA) + 4 config cards (bKash/SMTP/SSO/Cron) showing on/off + what env vars are still needed.
+- Wired ExportButton into AllClientsView, IncomeLedgersView, RenewalsView PageHeader actions. Added ViewKey "system-settings" + Settings icon + sidebar entry + Shell VIEWS entry.
+
+Verification (curl, dev kept alive):
+- /api/export/clients → 64 rows, Content-Type text/csv, header + real data (rahim.mudaraba@demo.com active). ✓
+- /api/export/ledger → 130 rows, signed amounts, BKSH8562854005 bkash-auto entry visible. ✓
+- /api/export/renewals → 12 rows (overdue + upcoming), phone + days columns. ✓
+- /api/system/status → bkash.mode=mock, smtp.configured=false, sso.configured=false (default secret), cron.secret=false, counts {admins:1, projects:5, clients:64, twoFactorEnabled:0, pendingPayments:7}. ✓
+- `bun run lint` clean. ✓
+
+Stage Summary:
+- Ops toolkit COMPLETE + verified. The user can now download CSVs of every client (for calls), the full ledger (for accounting), and the dunning list (overdue+upcoming with phones) — directly serving their real monthly workflow. The System Settings view shows at a glance what's configured (bKash/SMTP/SSO/cron) and what env vars are still needed for the live VPS deploy.

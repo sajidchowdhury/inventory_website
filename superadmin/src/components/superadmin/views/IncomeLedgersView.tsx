@@ -15,6 +15,7 @@ import {
   StatCard,
   EmptyState,
 } from "@/components/superadmin/shared/Primitives"
+import { ExportButton } from "@/components/superadmin/shared/ExportButton"
 import { getIcon } from "@/components/superadmin/shared/icons"
 import { formatBDT, formatNumber, formatDateTime } from "@/lib/format"
 import {
@@ -229,9 +230,12 @@ export function IncomeLedgersView() {
         title="Income & Ledgers"
         description="Cross-project income and full ledger."
         action={
-          <Button variant="outline" size="sm" onClick={refresh} disabled={loading}>
-            <RefreshCw className="mr-2 size-3.5" /> Refresh
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={refresh} disabled={loading}>
+              <RefreshCw className="mr-2 size-3.5" /> Refresh
+            </Button>
+            <ExportButton url="/api/export/ledger" />
+          </div>
         }
       />
 

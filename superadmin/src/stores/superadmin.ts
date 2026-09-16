@@ -14,6 +14,7 @@ export type ViewKey =
   | "security"
   | "automated-payments"
   | "sso"
+  | "system-settings"
   | "project"
   | "site"
 
