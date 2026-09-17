@@ -16,6 +16,8 @@ db/
 .env
 .env.local
 .env.*.local
+# .env.example MUST be committed (the root .gitignore's .env* would otherwise hide it)
+!.env.example
 
 # Logs
 dev.log
