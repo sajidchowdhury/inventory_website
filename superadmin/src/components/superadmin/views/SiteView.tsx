@@ -1,10 +1,10 @@
 "use client"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, ArrowRight, ArrowDown, Quote, Moon, ExternalLink, MessageCircle, Facebook, Code2, Sparkles, type LucideIcon } from "lucide-react"
+import { Loader2, ArrowRight, ArrowDown, Quote, Moon, ExternalLink, MessageCircle, Facebook, Code2, Sparkles, ChevronLeft, ChevronRight, Globe, type LucideIcon } from "lucide-react"
 import { ICONS } from "@/components/superadmin/shared/icons"
 import { useSuperAdmin } from "@/stores/superadmin"
 
@@ -42,6 +42,7 @@ type RootContent = {
   footerEmail?: string
   footerTagline?: string
   products?: Product[]
+  showcase?: Array<{ name?: string; url?: string; desc?: string }>
 }
 
 const FALLBACK: RootContent = {
@@ -68,6 +69,14 @@ const FALLBACK: RootContent = {
   footerFacebook: "https://facebook.com/inventoryos",
   footerEmail: "hello@inventoryos.xyz",
   footerTagline: "আপনার ব্যবসার জন্য সম্পূর্ণ ডিজিটাল সলিউশন",
+  showcase: [
+    { name: "nekirjhuri.com", url: "https://nekirjhuri.com", desc: "অনলাইন শপিং ও লাইফস্টাইল প্ল্যাটফর্ম" },
+    { name: "rizqunbd.com", url: "https://rizqunbd.com", desc: "রিজিক আনবিডি — খাদ্য ও জীবনযাত্রা" },
+    { name: "chowdhurypara.com", url: "https://chowdhurypara.com", desc: "চৌধুরীপাড়া সম্প্রদায় পোর্টাল" },
+    { name: "mohipalchowdhurybari.com", url: "https://mohipalchowdhurybari.com", desc: "মহিপাল চৌধুরী বাড়ি — পারিবারিক ওয়েবসাইট" },
+    { name: "cakedesk.bd", url: "https://cakedesk.bd", desc: "কেক ডেস্ক — অর্ডার ম্যানেজমেন্ট সিস্টেম" },
+    { name: "remotecenter.com.bd", url: "https://remotecenter.com.bd", desc: "রিমোট সেন্টার — রিমোট সার্ভিস হাব" },
+  ],
 }
 
 // ---------------------------------------------------------------------------
@@ -234,6 +243,7 @@ export function SiteView() {
   const [content, setContent] = useState<RootContent | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const showcaseRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     let active = true
@@ -291,6 +301,12 @@ export function SiteView() {
   const developedBy = content.developedBy || FALLBACK.developedBy!
   const developedByUrl =
     content.developedByUrl || FALLBACK.developedByUrl!
+  // Showcase (আমাদের কাজ) — controllable carousel of external projects.
+  // Falls back to FALLBACK.showcase when the admin hasn't added any.
+  const showcase =
+    content.showcase && content.showcase.length > 0
+      ? content.showcase
+      : (FALLBACK.showcase ?? [])
 
   return (
     <div className="flex min-h-screen flex-col bg-white">
@@ -473,14 +489,15 @@ export function SiteView() {
         </div>
       </section>
 
-      {/* ===== Showcase / contact CTA (anchored to #showcase for the secondary CTA) ===== */}
+      {/* ===== Showcase (আমাদের কাজ) — controllable carousel + contact CTA ===== */}
       <section id="showcase" className="bg-white px-6 py-24">
-        <div className="mx-auto max-w-4xl text-center">
+        <div className="mx-auto max-w-6xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
+            className="mb-10 text-center"
           >
             <h2 className="mb-4 text-3xl font-bold text-gray-900 sm:text-4xl" style={BN}>
               আমাদের কাজ
@@ -489,8 +506,85 @@ export function SiteView() {
             <p className="mx-auto max-w-xl text-gray-500" style={BN}>
               যেসব প্রজেক্ট আমরা ডিজাইন ও ডেভেলপ করেছি
             </p>
+          </motion.div>
 
-            <p className="mb-6 mt-12 text-lg text-gray-700" style={BN}>
+          {showcase.length > 0 ? (
+            <div className="relative">
+              <div
+                ref={showcaseRef}
+                className="flex gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+                style={{ scrollBehavior: "smooth" }}
+              >
+                {showcase.map((p, i) => {
+                  const url = p.url || "#"
+                  const href = url.startsWith("http") ? url : `https://${url}`
+                  return (
+                    <a
+                      key={i}
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group w-72 shrink-0 rounded-2xl border border-gray-200 bg-white p-6 transition-all hover:-translate-y-1 hover:border-emerald-300 hover:shadow-lg"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex size-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+                          <Globe className="size-5" />
+                        </div>
+                        <ExternalLink className="size-4 text-gray-300 transition-colors group-hover:text-emerald-500" />
+                      </div>
+                      <h3 className="mt-4 text-base font-bold text-gray-900" style={BN}>
+                        {p.name || "—"}
+                      </h3>
+                      {p.desc && (
+                        <p className="mt-2 text-sm leading-relaxed text-gray-500" style={BN}>
+                          {p.desc}
+                        </p>
+                      )}
+                      {p.url && (
+                        <p className="mt-3 truncate text-xs text-emerald-600">{p.url}</p>
+                      )}
+                    </a>
+                  )
+                })}
+              </div>
+              {showcase.length > 1 && (
+                <div className="mt-4 flex justify-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="size-9 rounded-full border-gray-300"
+                    onClick={() =>
+                      showcaseRef.current?.scrollBy({ left: -300, behavior: "smooth" })
+                    }
+                    aria-label="Scroll left"
+                  >
+                    <ChevronLeft className="size-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="size-9 rounded-full border-gray-300"
+                    onClick={() =>
+                      showcaseRef.current?.scrollBy({ left: 300, behavior: "smooth" })
+                    }
+                    aria-label="Scroll right"
+                  >
+                    <ChevronRight className="size-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-dashed border-gray-200 py-16 text-center">
+              <p className="text-sm text-gray-400" style={BN}>
+                কোনো প্রজেক্ট যোগ করা হয়নি — SuperAdmin → Root Site → Landing Page এ গিয়ে প্রজেক্ট যোগ করুন।
+              </p>
+            </div>
+          )}
+
+          {/* contact CTA */}
+          <div className="mt-16 text-center">
+            <p className="mb-6 text-lg text-gray-700" style={BN}>
               আপনার ব্যবসার জন্য সিস্টেম তৈরি করতে চান?
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -507,7 +601,7 @@ export function SiteView() {
                 </Button>
               </a>
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
 

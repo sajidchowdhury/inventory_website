@@ -12,13 +12,16 @@ import {
 } from "lucide-react"
 import type { ProjectData } from "@/components/superadmin/views/project/ProjectView"
 
-type SlotType = "text" | "textarea" | "number" | "list"
+type SlotType = "text" | "textarea" | "number" | "list" | "objectList"
+
+type SlotField = { key: string; label: string; type?: "text" | "textarea" }
 
 type Slot = {
   key: string
   label: string
   type: SlotType
   placeholder?: string
+  fields?: SlotField[] // for objectList: the named sub-fields of each item
 }
 
 type SlotSection = {
@@ -54,6 +57,21 @@ const ROOT_SECTIONS: SlotSection[] = [
     slots: [
       { key: "visionBody", label: "Body", type: "textarea" },
       { key: "visionSub", label: "Sub text", type: "textarea" },
+    ],
+  },
+  {
+    section: "Showcase (আমাদের কাজ)",
+    slots: [
+      {
+        key: "showcase",
+        label: "Project cards (horizontal carousel on the root site)",
+        type: "objectList",
+        fields: [
+          { key: "name", label: "Website name" },
+          { key: "url", label: "Link (https://...)" },
+          { key: "desc", label: "What it's about", type: "textarea" },
+        ],
+      },
     ],
   },
   {
@@ -245,7 +263,13 @@ function SlotField({
         <span>·</span>
         <span>{slot.label}</span>
       </Label>
-      {slot.type === "list" ? (
+      {slot.type === "objectList" ? (
+        <ObjectListEditor
+          value={Array.isArray(value) ? (value as Array<Record<string, string>>) : []}
+          fields={slot.fields || []}
+          onChange={onChange}
+        />
+      ) : slot.type === "list" ? (
         <ListEditor
           value={Array.isArray(value) ? (value as Array<string | number>) : []}
           onChange={onChange}
@@ -333,6 +357,74 @@ function ListEditor({
   )
 }
 
+function ObjectListEditor({
+  value,
+  fields,
+  onChange,
+}: {
+  value: Array<Record<string, string>>
+  fields: SlotField[]
+  onChange: (v: Array<Record<string, string>>) => void
+}) {
+  const items = Array.isArray(value) ? value : []
+  function update(i: number, fieldKey: string, v: string) {
+    const next = items.slice()
+    next[i] = { ...next[i], [fieldKey]: v }
+    onChange(next)
+  }
+  function remove(i: number) {
+    onChange(items.filter((_, idx) => idx !== i))
+  }
+  function add() {
+    onChange([...items, {}])
+  }
+  return (
+    <div className="space-y-3">
+      {items.length === 0 && (
+        <p className="text-xs text-muted-foreground">No items yet. Click "Add" below.</p>
+      )}
+      {items.map((item, i) => (
+        <div key={i} className="space-y-2 rounded-md border border-border/60 p-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-muted-foreground">#{i + 1}</span>
+            <Button
+              type="button"
+              size="icon"
+              variant="ghost"
+              className="size-7 text-rose-600 hover:bg-rose-50"
+              onClick={() => remove(i)}
+            >
+              <Trash2 className="size-3.5" />
+            </Button>
+          </div>
+          {fields.map((f) => (
+            <div key={f.key} className="space-y-1">
+              <Label className="text-[10px] text-muted-foreground">{f.label}</Label>
+              {f.type === "textarea" ? (
+                <Textarea
+                  value={item[f.key] ?? ""}
+                  onChange={(e) => update(i, f.key, e.target.value)}
+                  className="min-h-14 text-sm"
+                />
+              ) : (
+                <Input
+                  value={item[f.key] ?? ""}
+                  onChange={(e) => update(i, f.key, e.target.value)}
+                  className="text-sm"
+                  placeholder={f.label}
+                />
+              )}
+            </div>
+          ))}
+        </div>
+      ))}
+      <Button type="button" size="sm" variant="outline" onClick={add} className="text-xs">
+        <Plus className="mr-1 size-3" /> Add item
+      </Button>
+    </div>
+  )
+}
+
 function LandingPreview({
   project,
   content,
@@ -384,6 +476,22 @@ function RootPreview({ content }: { content: Content }) {
         <p className="text-[11px]">{s("visionBody") || "Vision body"}</p>
         <p className="mt-1 text-[10px] text-muted-foreground">{s("visionSub") || "Vision sub"}</p>
       </div>
+      {Array.isArray(content.showcase) && content.showcase.length > 0 && (
+        <div className="rounded-md bg-muted/40 p-3">
+          <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+            আমাদের কাজ · {content.showcase.length} projects
+          </p>
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {(content.showcase as Array<Record<string, string>>).map((p, i) => (
+              <div key={i} className="w-32 shrink-0 rounded-md border border-border/60 bg-white p-2">
+                <p className="truncate text-[11px] font-medium">{p.name || "—"}</p>
+                <p className="mt-0.5 line-clamp-2 text-[9px] text-muted-foreground">{p.desc || ""}</p>
+                {p.url && <p className="mt-1 truncate text-[9px] text-emerald-600">{p.url}</p>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       <div className="flex flex-wrap items-center gap-3 border-t border-border/60 pt-3 text-[10px] text-muted-foreground">
         <span>{s("footerEmail") || "email"}</span>
         <span>·</span>

@@ -368,3 +368,23 @@ Verification (curl, dev kept alive):
 
 Stage Summary:
 - Ops toolkit COMPLETE + verified. The user can now download CSVs of every client (for calls), the full ledger (for accounting), and the dunning list (overdue+upcoming with phones) — directly serving their real monthly workflow. The System Settings view shows at a glance what's configured (bKash/SMTP/SSO/cron) and what env vars are still needed for the live VPS deploy.
+
+---
+Task ID: 17 (showcase controllable)
+Agent: orchestrator (main)
+Task: Make "আমাদের কাজ" (showcase) section controllable from the admin panel — carousel of projects (name + link + desc)
+
+Work Log:
+- The root site's "আমাদের কাজ" section was a hardcoded contact CTA only — no project list. Now it's a controllable carousel.
+- LandingEditorTab: added a new slot type "objectList" (repeatable items with named sub-fields) + ObjectListEditor component. Added a "Showcase (আমাদের কাজ)" section to ROOT_SECTIONS with fields {name, url, desc}. RootPreview now renders the showcase as a horizontal scroll of mini-cards.
+- SiteView: added showcase to RootContent type + FALLBACK (6 original projects: nekirjhuri.com, rizqunbd.com, chowdhurypara.com, mohipalchowdhurybari.com, cakedesk.bd, remotecenter.com.bd with Bangla descriptions). Replaced the empty showcase section with: heading "আমাদের কাজ" + subtitle + a horizontal-scroll carousel of project cards (Globe icon + name + desc + url, hover lift, external-link icon) + left/right scroll buttons (ChevronLeft/Right via showcaseRef.scrollBy) + the contact CTA below. Falls back to FALLBACK.showcase when the admin hasn't added any.
+- seed.ts ROOT_LANDING: added the showcase array (6 projects) so it's persisted in the DB + served by GET /api/landing/root.
+- Fixed a react-hooks/rules-of-hooks error (useRef was after the loading early return — moved to the top of the component with the other hooks).
+
+Verification:
+- `bun run lint` clean.
+- curl GET /api/landing/root → showcase array with 6 items (name + url + desc). ✓
+- agent-browser → Preview Root Site → "আমাদের কাজ" heading + "যেসব প্রজেক্ট আমরা ডিজাইন ও ডেভেলপ করেছি" + carousel cards (nekirjhuri.com "অনলাইন শপিং ও লাইফস্টাইল প্ল্যাটফর্ম" https://nekirjhuri.com, rizqunbd.com, …) + hero CTA "আমাদের কাজ দেখুন" anchored to #showcase. ✓
+
+Stage Summary:
+- "আমাদের কাজ" is now fully controllable: the admin edits the project list (name/link/desc, add/remove/reorder) in SuperAdmin → Root Site → Landing Page tab → Showcase section, saves, and the root site's carousel reflects it within the cache TTL. Seeded with the 6 original InventoryOS projects.

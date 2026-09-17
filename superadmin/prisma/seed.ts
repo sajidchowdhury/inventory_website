@@ -46,6 +46,14 @@ const ROOT_LANDING = JSON.stringify({
   footerFacebook: "https://facebook.com/inventoryos",
   footerEmail: "hello@inventoryos.xyz",
   footerTagline: "আপনার ব্যবসার জন্য সম্পূর্ণ ডিজিটাল সলিউশন",
+  showcase: [
+    { name: "nekirjhuri.com", url: "https://nekirjhuri.com", desc: "অনলাইন শপিং ও লাইফস্টাইল প্ল্যাটফর্ম" },
+    { name: "rizqunbd.com", url: "https://rizqunbd.com", desc: "রিজিক আনবিডি — খাদ্য ও জীবনযাত্রা" },
+    { name: "chowdhurypara.com", url: "https://chowdhurypara.com", desc: "চৌধুরীপাড়া সম্প্রদায় পোর্টাল" },
+    { name: "mohipalchowdhurybari.com", url: "https://mohipalchowdhurybari.com", desc: "মহিপাল চৌধুরী বাড়ি — পারিবারিক ওয়েবসাইট" },
+    { name: "cakedesk.bd", url: "https://cakedesk.bd", desc: "কেক ডেস্ক — অর্ডার ম্যানেজমেন্ট সিস্টেম" },
+    { name: "remotecenter.com.bd", url: "https://remotecenter.com.bd", desc: "রিমোট সেন্টার — রিমোট সার্ভিস হাব" },
+  ],
 })
 
 const PRODUCT_LANDING = (name: string, desc: string) =>
