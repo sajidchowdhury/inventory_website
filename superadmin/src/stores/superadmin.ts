@@ -16,6 +16,7 @@ export type ViewKey =
   | "sso"
   | "system-settings"
   | "project"
+  | "product-site"
   | "site"
 
 export type AdminSessionInfo = {

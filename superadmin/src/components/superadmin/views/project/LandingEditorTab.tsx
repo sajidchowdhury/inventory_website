@@ -11,6 +11,7 @@ import {
   LayoutTemplate, Save, Plus, Trash2, Eye, RefreshCw, ExternalLink,
 } from "lucide-react"
 import type { ProjectData } from "@/components/superadmin/views/project/ProjectView"
+import { useSuperAdmin } from "@/stores/superadmin"
 
 type SlotType = "text" | "textarea" | "number" | "list" | "objectList"
 
@@ -89,7 +90,9 @@ const PRODUCT_SECTIONS: SlotSection[] = [
   {
     section: "Hero",
     slots: [
-      { key: "badge", label: "Badge", type: "text" },
+      { key: "badge", label: "Badge (top-left)", type: "text" },
+      { key: "productName", label: "Product name", type: "text" },
+      { key: "brandTagline", label: "Brand tagline", type: "text" },
       { key: "heroHeadline", label: "Headline", type: "text" },
       { key: "heroSubtitle", label: "Subtitle", type: "textarea" },
       { key: "ctaPrimary", label: "Primary CTA", type: "text" },
@@ -97,18 +100,71 @@ const PRODUCT_SECTIONS: SlotSection[] = [
     ],
   },
   {
+    section: "Stats (hero row)",
+    slots: [
+      {
+        key: "stats",
+        label: "Stat cards (big number + label)",
+        type: "objectList",
+        fields: [
+          { key: "value", label: "Value (e.g. 25+)" },
+          { key: "label", label: "Label (e.g. Sessions built)" },
+        ],
+      },
+    ],
+  },
+  {
     section: "Features",
-    slots: [{ key: "features", label: "Feature bullets", type: "list" }],
+    slots: [
+      {
+        key: "features",
+        label: "Feature cards",
+        type: "objectList",
+        fields: [
+          { key: "title", label: "Title" },
+          { key: "desc", label: "Description", type: "textarea" },
+        ],
+      },
+    ],
+  },
+  {
+    section: "Deep-dives",
+    slots: [
+      {
+        key: "deepdives",
+        label: "Alternating spotlight sections",
+        type: "objectList",
+        fields: [
+          { key: "title", label: "Title" },
+          { key: "desc", label: "Description", type: "textarea" },
+          { key: "bullets", label: "Bullets (one per line)", type: "textarea" },
+        ],
+      },
+    ],
   },
   {
     section: "Pricing",
     slots: [
       { key: "pricing", label: "Monthly price (BDT)", type: "number" },
+      { key: "pricingNote", label: "Pricing note", type: "text" },
+    ],
+  },
+  {
+    section: "CTA",
+    slots: [
+      { key: "ctaHeadline", label: "CTA headline", type: "text" },
+      { key: "ctaButton", label: "CTA button label", type: "text" },
     ],
   },
   {
     section: "Footer",
-    slots: [{ key: "footerEmail", label: "Email", type: "text" }],
+    slots: [
+      { key: "footerEmail", label: "Email", type: "text" },
+      { key: "footerPhone", label: "Phone", type: "text" },
+      { key: "footerWhatsapp", label: "WhatsApp link", type: "text" },
+      { key: "footerFacebook", label: "Facebook link", type: "text" },
+      { key: "footerTagline", label: "Tagline", type: "text" },
+    ],
   },
 ]
 
@@ -183,6 +239,13 @@ export function LandingEditorTab({
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            onClick={() => useSuperAdmin.getState().setView("product-site")}
+            className="bg-emerald-600 text-white hover:bg-emerald-700"
+          >
+            <Eye className="mr-1.5 size-3.5" /> Preview landing
+          </Button>
           {project.landingUrl && (
             <Button
               size="sm"
@@ -508,45 +571,59 @@ function RootPreview({ content }: { content: Content }) {
 
 function ProductPreview({ content }: { content: Content }) {
   const s = (k: string) => (typeof content[k] === "string" ? String(content[k]) : "")
-  const features = Array.isArray(content.features)
-    ? (content.features as Array<string | number>)
-    : []
+  const stats = Array.isArray(content.stats) ? (content.stats as Array<Record<string, string>>) : []
+  const features = Array.isArray(content.features) ? (content.features as Array<Record<string, string>>) : []
+  const deepdives = Array.isArray(content.deepdives) ? (content.deepdives as Array<Record<string, string>>) : []
   const price = typeof content.pricing === "number" ? content.pricing : Number(content.pricing) || 0
   return (
-    <div className="space-y-4 rounded-lg border border-border/60 p-4">
-      <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200">
-        {s("badge") || "Badge"}
-      </Badge>
+    <div className="space-y-3 rounded-lg border border-border/60 bg-slate-950 p-4 text-white">
+      <div className="flex items-center justify-between">
+        <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30">
+          {s("badge") || "Badge"}
+        </Badge>
+        <span className="text-[9px] text-white/40">{s("brandTagline") || "tagline"}</span>
+      </div>
       <div>
-        <h3 className="text-base font-bold">{s("heroHeadline") || "Headline"}</h3>
-        <p className="mt-1 text-xs text-muted-foreground">
-          {s("heroSubtitle") || "Subtitle"}
-        </p>
-        <div className="mt-3 flex gap-2">
-          <span className="rounded-md bg-emerald-600 px-3 py-1 text-[10px] text-white">
-            {s("ctaPrimary") || "Primary"}
-          </span>
-          <span className="rounded-md border border-border px-3 py-1 text-[10px]">
-            {s("ctaSecondary") || "Secondary"}
-          </span>
+        <p className="text-[10px] uppercase tracking-wide text-emerald-400">{s("productName") || "Product"}</p>
+        <h3 className="text-base font-bold leading-tight">{s("heroHeadline") || "Headline"}</h3>
+        <p className="mt-1 text-[11px] text-white/60">{s("heroSubtitle") || "Subtitle"}</p>
+        <div className="mt-2 flex gap-1.5">
+          <span className="rounded-md bg-emerald-500 px-2 py-0.5 text-[9px] text-white">{s("ctaPrimary") || "Primary"}</span>
+          <span className="rounded-md border border-white/20 px-2 py-0.5 text-[9px]">{s("ctaSecondary") || "Secondary"}</span>
         </div>
       </div>
-      {features.length > 0 && (
-        <ul className="space-y-1 text-xs">
-          {features.map((f, i) => (
-            <li key={i} className="flex items-start gap-2">
-              <span className="mt-0.5 size-1.5 rounded-full bg-emerald-500" />
-              {String(f)}
-            </li>
+      {stats.length > 0 && (
+        <div className="grid grid-cols-3 gap-1.5">
+          {stats.slice(0, 3).map((st, i) => (
+            <div key={i} className="rounded-md bg-white/5 p-1.5 text-center">
+              <p className="text-sm font-bold text-emerald-400">{st.value || "—"}</p>
+              <p className="text-[8px] text-white/50">{st.label || ""}</p>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
-      <div className="rounded-md bg-muted/60 p-3 text-center">
-        <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Monthly</p>
-        <p className="text-base font-bold text-emerald-600">৳{price || 0}</p>
+      {features.length > 0 && (
+        <div className="grid grid-cols-2 gap-1.5">
+          {features.slice(0, 4).map((f, i) => (
+            <div key={i} className="rounded-md bg-white/5 p-1.5">
+              <p className="text-[10px] font-semibold">{f.title || "Feature"}</p>
+              <p className="mt-0.5 line-clamp-2 text-[8px] text-white/50">{f.desc || ""}</p>
+            </div>
+          ))}
+        </div>
+      )}
+      {deepdives.length > 0 && (
+        <div className="rounded-md bg-white/5 p-2">
+          <p className="text-[10px] font-semibold">{deepdives[0].title || "Deep-dive"}</p>
+          <p className="mt-0.5 line-clamp-2 text-[8px] text-white/50">{deepdives[0].desc || ""}</p>
+        </div>
+      )}
+      <div className="flex items-center justify-between rounded-md bg-emerald-600/90 px-2 py-1">
+        <span className="text-[10px] font-medium">{s("ctaButton") || "Get Started"}</span>
+        <span className="text-[10px] font-bold">৳{price || 0}<span className="ml-1 text-[8px] font-normal opacity-80">/mo</span></span>
       </div>
-      <div className="border-t border-border/60 pt-3 text-[10px] text-muted-foreground">
-        {s("footerEmail") || "email"}
+      <div className="border-t border-white/10 pt-2 text-[9px] text-white/40">
+        {s("footerEmail") || "email"} · {s("footerPhone") || "phone"}
       </div>
     </div>
   )

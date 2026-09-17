@@ -14,6 +14,7 @@ import { AutomatedPaymentsView } from "@/components/superadmin/views/AutomatedPa
 import { SsoView } from "@/components/superadmin/views/SsoView"
 import { SystemSettingsView } from "@/components/superadmin/views/SystemSettingsView"
 import { SiteView } from "@/components/superadmin/views/SiteView"
+import { ProductSiteView } from "@/components/superadmin/views/ProductSiteView"
 import { ProjectView } from "@/components/superadmin/views/project/ProjectView"
 import { LoginView } from "@/components/superadmin/views/LoginView"
 import { PlaceholderView } from "@/components/superadmin/views/PlaceholderView"
@@ -38,19 +39,22 @@ export const VIEWS: Partial<Record<ViewKey, () => React.ReactElement>> = {
   sso: SsoView,
   "system-settings": SystemSettingsView,
   project: ProjectView,
+  "product-site": ProductSiteView,
   site: SiteView,
 }
 
 export function Shell() {
-  const { view } = useSuperAdmin()
+  const { view, activeProjectKey } = useSuperAdmin()
   const View = VIEWS[view] ?? UnknownView
+  // product-site remounts on project switch → fresh loading state, no stale flash
+  const viewKey = view === "product-site" && activeProjectKey ? `product-site-${activeProjectKey}` : undefined
   return (
     <div className="flex min-h-screen flex-row bg-muted/20">
       <Sidebar />
       <div className="flex min-h-screen flex-1 flex-col">
         <Topbar />
         <main className="flex-1 overflow-y-auto p-6">
-          <View />
+          <View key={viewKey} />
         </main>
       </div>
     </div>

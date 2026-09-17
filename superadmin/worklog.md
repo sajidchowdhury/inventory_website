@@ -388,3 +388,25 @@ Verification:
 
 Stage Summary:
 - "আমাদের কাজ" is now fully controllable: the admin edits the project list (name/link/desc, add/remove/reorder) in SuperAdmin → Root Site → Landing Page tab → Showcase section, saves, and the root site's carousel reflects it within the cache TTL. Seeded with the 6 original InventoryOS projects.
+
+---
+Task ID: 18 (product landing template)
+Agent: orchestrator (main)
+Task: cctv-style product landing template — controllable per-project content + color, rendered by ProductSiteView
+
+Work Log:
+- Fetched https://inventoryos.xyz/cctv to extract the reference template (dark hero + stats row → features grid → alternating deep-dives → pricing → CTA → footer; multi-accent).
+- Extended /api/landing/[key] to also return `_project: {key,name,icon,color,landingUrl,isRoot}` so a product SiteView can theme by color without a second authed call.
+- LandingEditorTab: rewrote PRODUCT_SECTIONS to the full template — Hero (badge/productName/brandTagline/heroHeadline/heroSubtitle/ctaPrimary/ctaSecondary), Stats (objectList: value+label), Features (objectList: title+desc — upgraded from the old string list), Deep-dives (objectList: title+desc+bullets-one-per-line), Pricing (pricing+pricingNote), CTA (ctaHeadline+ctaButton), Footer (email/phone/whatsapp/facebook/tagline). Rewrote ProductPreview to render the new dark-template structure.
+- New ProductSiteView.tsx: fetches GET /api/landing/[key], renders the cctv-style landing themed by content._project.color (accent map: emerald/amber/cyan/blue/violet/rose → text/bg/bgSoft/border/gradient/cta classes). Dark slate-950 hero with gradient + stats row → light features grid → alternating deep-dives (text + visual mock card) → pricing card → full-width color CTA → dark footer with contact links. "Back to SuperAdmin" button. Key-remount in Shell on project switch for a fresh loading state.
+- Added ViewKey "product-site" + wired into Shell VIEWS + a "Preview landing" button in the LandingEditorTab header (next to "Open live") that switches to it.
+- Seed: rewrote PRODUCT_LANDING (generic rich Bangla template) + added CCTV_LANDING (the real cctv content pulled from the live site: 4 stats, 9 features, 2 deep-dives). The cctv project now uses CCTV_LANDING.
+
+Verification:
+- `bun run lint` clean.
+- curl GET /api/landing/cctv → productName "CCTV Inventory SaaS", heroHeadline "Run your CCTV shop on autopilot", 4 stats, 9 features, 2 deepdives, pricing 600, _project {key:cctv, color:cyan, icon:Camera}. ✓
+- agent-browser → CCTV project → Landing Page tab → editor shows all slots editable (badge "CCTV InventoryOS", productName "CCTV Inventory SaaS", brandTagline, heroHeadline, features incl. "Sales & Invoicing"). ✓
+- Click "Preview landing" → ProductSiteView renders: "BUILT FOR CCTV BUSINESSES IN BANGLADESH" tagline + "Run your CCTV shop on autopilot" h1 + "Everything you need" features + Sales & Invoicing / Purchase Management cards + "Serial-Level Tracking" deep-dive + "Ready to get started?" CTA + "CCTV Inventory SaaS" footer, themed cyan-on-dark. ✓
+
+Stage Summary:
+- Every product now has a cctv-style landing page template, controllable slot-for-slot from the admin panel (Hero/Stats/Features/Deep-dives/Pricing/CTA/Footer), themed per-project by color (cctv=cyan, madrasha=amber, mudaraba=emerald, creativecast=blue, mycreativecode=violet). The same template reuses across all products — change content + color per project from the LandingEditor tab, hit "Preview landing" to see it. The CCTV seed reproduces the real https://inventoryos.xyz/cctv content.

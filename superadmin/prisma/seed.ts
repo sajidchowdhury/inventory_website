@@ -59,20 +59,87 @@ const ROOT_LANDING = JSON.stringify({
 const PRODUCT_LANDING = (name: string, desc: string) =>
   JSON.stringify({
     badge: name,
-    heroHeadline: name,
+    productName: name,
+    brandTagline: "Built for your business",
+    heroHeadline: `${name} — আপনার ব্যবসা এক জায়গায়`,
     heroSubtitle: desc,
-    ctaPrimary: "লগইন করুন",
-    ctaSecondary: "ডেমো দেখুন",
-    features: ["বিনিয়োগকারী ব্যবস্থাপনা", "অটো ক্যালকুলেশন", "এক্সেল এক্সপোর্ট", "রিপোর্ট"],
+    ctaPrimary: "Login to Start",
+    ctaSecondary: "Explore Features",
+    stats: [
+      { value: "100+", label: "Clients" },
+      { value: "24/7", label: "Access" },
+      { value: "৳500", label: "/month" },
+      { value: "BD", label: "support" },
+    ],
+    features: [
+      { title: "Dashboard", desc: "এক নজরে সব কিছু — sales, stock, reports।" },
+      { title: "Invoicing", desc: "ইনভয়েস তৈরি, প্রিন্ট, কাস্টম ব্র্যান্ডিং।" },
+      { title: "Reports", desc: "১৬+ রিপোর্ট — লাভ/ক্ষতি, স্টক, লেজার।" },
+      { title: "Mobile-first", desc: "ফোন থেকেই সব কাজ।" },
+      { title: "Bangla + English", desc: "দ্বিভাষিক ইন্টারফেস।" },
+      { title: "Cloud backup", desc: "ডেটা সুরক্ষিত, অটো ব্যাকআপ।" },
+    ],
+    deepdives: [
+      { title: "Serial-level tracking", desc: "প্রতিটি প্রোডাক্ট সিরিয়াল নম্বর দিয়ে ট্র্যাক করুন।", bullets: "Barcode scan\nWarranty lookup by serial\nFull product history" },
+    ],
     pricing: 500,
+    pricingNote: "মাসিক সাবস্ক্রিপশন — যেকোনো সময় ক্যানসেল করুন।",
+    ctaHeadline: "Ready to get started?",
+    ctaButton: "Get Started",
     footerEmail: "hello@inventoryos.xyz",
+    footerPhone: "+880 1787 492561",
+    footerWhatsapp: "https://wa.me/8801787492561",
+    footerFacebook: "https://facebook.com/inventoryos",
+    footerTagline: "আপনার ব্যবসার জন্য সম্পূর্ণ ডিজিটাল সলিউশন",
   })
+
+// CCTV landing content pulled from https://inventoryos.xyz/cctv — proves the
+// product template reproduces the real site, controllable slot-for-slot.
+const CCTV_LANDING = JSON.stringify({
+  badge: "CCTV InventoryOS",
+  productName: "CCTV Inventory SaaS",
+  brandTagline: "Built for CCTV businesses in Bangladesh",
+  heroHeadline: "Run your CCTV shop on autopilot",
+  heroSubtitle: "A complete toolkit for CCTV retail & service — sales, stock, warranty, RMA, accounting, reports.",
+  ctaPrimary: "Login to Start",
+  ctaSecondary: "Explore Features",
+  stats: [
+    { value: "25+", label: "Sessions built" },
+    { value: "16+", label: "Report types" },
+    { value: "5", label: "RMA stages" },
+    { value: "∞", label: "Products supported" },
+  ],
+  features: [
+    { title: "Sales & Invoicing", desc: "Create invoices with serial capture, barcode scan, auto stock check, held carts, and custom invoice branding." },
+    { title: "Purchase Management", desc: "Record purchases with serial numbers, auto stock-in, supplier balance tracking, and inline supplier creation." },
+    { title: "Stock Control", desc: "Serialised + qty-based stock tracking, low-stock alerts, stock-by-category/model reports, real-time on-hand." },
+    { title: "Accounting & Cash Book", desc: "Single-entry income/expense, account heads, cash book with running balance, customer/supplier ledgers." },
+    { title: "Warranty Tracking", desc: "Warranty lookup by serial, full product history (purchase, sale, RMA), warranty card PDF + SMS." },
+    { title: "RMA Pipeline", desc: "5-stage return merchandise authorization, auto-warranty check, SMS on each transition, timestamped history." },
+    { title: "Quotations", desc: "Build quotes with product/labor/service lines, convert to sale with serial picker, track win/loss." },
+    { title: "Reminders & Alerts", desc: "Bill renewals, warranty expiry, salary, follow-ups — worker dispatches SMS automatically." },
+    { title: "16+ Reports", desc: "Sales, purchase, profit/loss, stock, cash book, ledgers, salary, warranty — all paginated + searchable." },
+  ],
+  deepdives: [
+    { title: "Serial-Level Tracking", desc: "Track every camera, DVR & NVR by serial number.", bullets: "Barcode scanner support with auto-add to cart\nGrouped invoice display: MODEL (NAME) / S1, S2, S3\nWarranty lookup by serial — full history in one click\nRMA pipeline with 5-stage tracking" },
+    { title: "Custom Invoices", desc: "Brand every invoice with your logo & colors.", bullets: "Your Business Name + phone + address\nLine items with serials grouped under each model\nAuto-calculated totals, tax, installation\nPrintable PDF + customer SMS" },
+  ],
+  pricing: 600,
+  pricingNote: "Monthly subscription — cancel anytime.",
+  ctaHeadline: "Ready to get started?",
+  ctaButton: "Get Started",
+  footerEmail: "hello@inventoryos.xyz",
+  footerPhone: "+880 1787 492561",
+  footerWhatsapp: "https://wa.me/8801787492561",
+  footerFacebook: "https://facebook.com/inventoryos",
+  footerTagline: "Built for CCTV businesses in Bangladesh",
+})
 
 const PROJECTS = [
   { key: "root", name: "InventoryOS Root Site", isRoot: true, icon: "Globe", color: "emerald", monthly: 0, landing: ROOT_LANDING },
   { key: "mudaraba", name: "Mudaraba Profit Management", icon: "Wallet", color: "emerald", monthly: 1500, landing: PRODUCT_LANDING("মুদারাবা প্রফিট ম্যানেজমেন্ট", "ইসলামিক মুদারাবা প্রফিট-শেয়ারিং সিস্টেম। ১৫০+ বিনিয়োগকারী, ১৬ সেক্টর, ৮-ফেজ ক্যালকুলেশন ইঞ্জিন।"), dbPath: "sample-apps/mudaraba.db", folderPath: "/var/www/mudaraba", appPort: 3002, landingUrl: "https://inventoryos.xyz/mudaraba" },
   { key: "madrasha", name: "MadrashaOS", icon: "GraduationCap", color: "amber", monthly: 800, landing: PRODUCT_LANDING("MadrashaOS", "মাদরাসা ব্যবস্থাপনা — ছাত্র, ফি, পরীক্ষা, উপস্থিতি, ডর্মিটরি।"), dbPath: "/var/www/madrasha/db/custom.db", folderPath: "/var/www/madrasha", appPort: 3005, landingUrl: "https://inventoryos.xyz/madrashaos" },
-  { key: "cctv", name: "CCTV Business Management", icon: "Camera", color: "cyan", monthly: 600, landing: PRODUCT_LANDING("CCTV বিজনেস ম্যানেজমেন্ট", "সিসিটিভি ইনস্টলেশন, মেইনটেন্যান্স, ক্লায়েন্ট ম্যানেজমেন্ট।"), dbPath: "/var/www/cctv/db/custom.db", folderPath: "/var/www/cctv", appPort: 3003 },
+  { key: "cctv", name: "CCTV Business Management", icon: "Camera", color: "cyan", monthly: 600, landing: CCTV_LANDING, dbPath: "/var/www/cctv/db/custom.db", folderPath: "/var/www/cctv", appPort: 3003 },
   { key: "creativecast", name: "CreativeCast", icon: "LineChart", color: "blue", monthly: 1200, landing: PRODUCT_LANDING("CreativeCast", "এআই-চালিত চাহিদা forecast ও অর্ডার প্ল্যানিং সিস্টেম।"), dbPath: "/var/www/creativecast/db/custom.db", folderPath: "/var/www/creativecast", appPort: 3004, landingUrl: "https://inventoryos.xyz/creativecast" },
   { key: "mycreativecode", name: "MyCreativeCode", icon: "Code2", color: "violet", monthly: 1000, landing: PRODUCT_LANDING("MyCreativeCode", "ক্লায়েন্ট পোর্টফোলিও ও প্রজেক্ট ম্যানেজমেন্ট।"), dbPath: "/var/www/mycreativecode/db/custom.db", folderPath: "/var/www/mycreativecode", appPort: 3006 },
 ] as const

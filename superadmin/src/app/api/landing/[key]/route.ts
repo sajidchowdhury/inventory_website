@@ -43,6 +43,20 @@ export async function GET(
     content = {}
   }
 
+  // Attach project metadata so a product SiteView can theme by color without a
+  // second (authed) call. Underscored so it's visually distinct from slots.
+  content = {
+    ...content,
+    _project: {
+      key: project.key,
+      name: project.name,
+      icon: project.icon,
+      color: project.color,
+      landingUrl: project.landingUrl,
+      isRoot: project.isRoot,
+    },
+  }
+
   // Auto-merge the products list for the root site — Plan §3, §9.
   // Every active non-root project becomes a card; "live" if landingUrl is set.
   if (project.isRoot) {
