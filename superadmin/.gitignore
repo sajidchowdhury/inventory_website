@@ -1,0 +1,28 @@
+# SuperAdmin — dependencies + build artifacts
+node_modules/
+.next/
+out/
+bun.lock
+package-lock.json
+yarn.lock
+
+# SQLite databases (regenerable via db:push + db:seed + init-mudaraba-db.mjs)
+db/
+*.db
+*.db-wal
+*.db-shm
+
+# Env (use .env.example as the template)
+.env
+.env.local
+.env.*.local
+
+# Logs
+dev.log
+server.log
+*.log
+
+# Tooling / scratch
+tool-results/
+agent-ctx/
+.DS_Store
