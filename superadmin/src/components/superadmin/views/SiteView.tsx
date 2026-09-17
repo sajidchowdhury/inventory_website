@@ -222,6 +222,22 @@ function ProductCard({ p }: { p: Product }) {
 }
 
 function BackToSuperAdminButton() {
+  // Only show inside the admin SPA (/SuperAdmin). On the public root site ("/")
+  // there's no admin context to go back to, so the button is hidden.
+  const [inAdmin, setInAdmin] = useState(false)
+  useEffect(() => {
+    // deferred out of the effect body so react-hooks/set-state-in-effect stays happy
+    const t = setTimeout(
+      () =>
+        setInAdmin(
+          typeof window !== "undefined" &&
+            window.location.pathname.replace(/\/+$/, "").endsWith("/SuperAdmin")
+        ),
+      0
+    )
+    return () => clearTimeout(t)
+  }, [])
+  if (!inAdmin) return null
   return (
     <button
       type="button"

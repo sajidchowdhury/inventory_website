@@ -1,0 +1,26 @@
+# InventoryOS — production Caddy config (deploy to /etc/caddy/Caddyfile on the VPS).
+#
+# ONE Next.js app (the SuperAdmin codebase) on :3001 serves:
+#   /              → public controllable root site (the Bangla marketing landing)
+#   /SuperAdmin    → admin SPA (login + dashboard + all views)
+#   /api/*         → APIs (landing content is public; the rest need an admin session)
+# The product apps (cctv, mudaraba, etc.) keep running on their own ports.
+
+inventoryos.xyz {
+	encode zstd gzip
+
+	# Admin panel + APIs + public root site → the SuperAdmin app on :3001.
+	# Order matters: these must come before the catch-all /* below.
+	handle /SuperAdmin*  { reverse_proxy localhost:3001 }
+	handle /api/*         { reverse_proxy localhost:3001 }
+
+	# Product apps already running on the VPS (each sets basePath to match).
+	handle /cctv/*           { reverse_proxy localhost:3003 }
+	handle /creativecast/*    { reverse_proxy localhost:3004 }
+	handle /madrashaos/*      { reverse_proxy localhost:3005 }
+	handle /mudaraba/*        { reverse_proxy localhost:3002 }
+	handle /mycreativecode/*  { reverse_proxy localhost:3006 }
+
+	# Public root site (the controllable Bangla landing) → :3001's "/" route.
+	handle /* { reverse_proxy localhost:3001 }
+}

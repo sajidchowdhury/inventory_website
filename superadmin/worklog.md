@@ -410,3 +410,26 @@ Verification:
 
 Stage Summary:
 - Every product now has a cctv-style landing page template, controllable slot-for-slot from the admin panel (Hero/Stats/Features/Deep-dives/Pricing/CTA/Footer), themed per-project by color (cctv=cyan, madrasha=amber, mudaraba=emerald, creativecast=blue, mycreativecode=violet). The same template reuses across all products — change content + color per project from the LandingEditor tab, hit "Preview landing" to see it. The CCTV seed reproduces the real https://inventoryos.xyz/cctv content.
+
+---
+Task ID: 19 (VPS deploy — production restructure)
+Agent: orchestrator (main)
+Task: Restructure for production: "/" = public root site, "/SuperAdmin" = admin SPA (one app) + deploy script + guide
+
+Work Log:
+- Restructured routes for production (ONE Next.js app serves both):
+  - src/app/page.tsx → now the PUBLIC root site: renders <SiteView /> (the controllable Bangla landing from /api/landing/root). No auth. This is inventoryos.xyz "/" in production.
+  - src/app/SuperAdmin/page.tsx → the admin SPA host (auth check → Shell/LoginView). This is inventoryos.xyz/SuperAdmin.
+- SiteView's BackToSuperAdminButton made route-aware: only renders when window.location.pathname ends with /SuperAdmin (admin context). On the public "/", hidden. Deferred setState to keep react-hooks/set-state-in-effect happy.
+- Caddyfile.prod: production Caddy config — /SuperAdmin + /api → :3001 (admin+APIs), product apps (/cctv etc.) → their ports, /* → :3001 (public root site).
+- deploy.sh: one-command VPS deploy — clones/pulls /var/www/inventoryos, bun install, .env (generates AUTH/CRON/SSO secrets via openssl), db:push+seed, bun run build (standalone), installs `inventoryos` systemd service on :3001 (ExecStart=node .next/standalone/server.js — node for node:sqlite), reloads Caddy, waits for :3001, prints URLs. Idempotent.
+- DEPLOY.md: concrete deploy guide — prerequisites (Node 24+), one-command deploy, change admin password (bcrypt snippet), wire real product apps (Phase 2 cross-DB — dbPath + schema map + permissions + WAL), enable automation (bKash/SMTP env), systemd timers for cron jobs, manual re-deploy, verification, troubleshooting.
+
+Verification:
+- `bun run lint` clean.
+- agent-browser GET / → renders the public controllable root site: "InventoryOS" + Bangla hero "ব্যবসাকে সিস্টেমে রূপ দিন, জীবনকে শান্তিতে ভরিয়ে দিন" + "আমাদের কাজ দেখুন" link (no admin chrome). ✓
+- agent-browser GET /SuperAdmin → renders the admin login form (Admin email + Password + Sign in). ✓
+- curl GET /api/landing/root → 200 (public landing JSON). ✓
+
+Stage Summary:
+- The codebase is now production-ready as ONE app: "/" = the controllable root website (what visitors see), "/SuperAdmin" = the admin panel, "/api/*" = the APIs. The user uploads this single app to the VPS per DEPLOY.md / deploy.sh — Caddy routes /, /SuperAdmin, /api to it on :3001, and the existing product apps (/cctv etc.) stay on their ports. The admin edits root + product landing content, which the public site reflects within the 60s cache TTL.
